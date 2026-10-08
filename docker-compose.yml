@@ -26,7 +26,7 @@ services:
   # ──────────────────────────────────────────────────────────────
   db:
     image: mysql:8.0
-    container_name: islaccount_mysql
+    container_name: iulacc_mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
@@ -37,7 +37,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d
     networks:
-      - islaccount-network
+      - iulacc-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
              "-u", "root", "--password=${DB_ROOT_PASSWORD}"]
@@ -53,7 +53,7 @@ services:
     build:
       context: ./backend
       target: development
-    container_name: islaccount_backend
+    container_name: iulacc_backend
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -64,7 +64,7 @@ services:
       # Reason: comma-separated extra origins for browser + Docker dev (see backend .env.example)
       CORS_ORIGINS: ${CORS_ORIGINS:-}
     ports:
-      - "127.0.0.1:5003:5000"
+      - "127.0.0.1:5033:5000"
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -73,7 +73,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - islaccount-network
+      - iulacc-network
     healthcheck:
       test:
         [
@@ -101,13 +101,13 @@ services:
     build:
       context: ./frontend
       target: development
-    container_name: islaccount_frontend
+    container_name: iulacc_frontend
     restart: unless-stopped
     environment:
       # Reason: Vite only exposes env vars prefixed with VITE_
       VITE_API_URL: ${VITE_API_URL}
     ports:
-      - "127.0.0.1:3003:3000"
+      - "127.0.0.1:3033:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -117,7 +117,7 @@ services:
       backend:
         condition: service_healthy
     networks:
-      - islaccount-network
+      - iulacc-network
 
   # ──────────────────────────────────────────────────────────────
   # Prisma Studio — DB GUI (optional, dev only)
@@ -127,7 +127,7 @@ services:
     build:
       context: ./backend
       target: development
-    container_name: islaccount_prisma_studio
+    container_name: iulacc_prisma_studio
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -142,7 +142,7 @@ services:
       db:
         condition: service_healthy
     networks:
-      - islaccount-network
+      - iulacc-network
     command: npx prisma studio --port 5555 --browser none
     profiles:
       - tools
@@ -155,5 +155,5 @@ volumes:
     driver: local
 
 networks:
-  islaccount-network:
+  iulacc-network:
     driver: bridge
