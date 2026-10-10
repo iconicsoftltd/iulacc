@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Download } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaMailBulk, FaRegEdit } from "react-icons/fa";
 import { FaLocationDot, FaPhone, FaVoicemail } from "react-icons/fa6";
 
@@ -17,6 +17,10 @@ const CompanyProfilePage = () => {
   const { data, isLoading, isError } = useGetProfileQuery({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const employee = data?.data?.employee;
+
+  useEffect(() => {
+    document.querySelector("main")?.scrollTo({ top: 0, behavior: "auto" });
+  }, []);
 
   if (isLoading) return <p>Loading...</p>;
   if (isError || !employee) return <p>Employee not found.</p>;
@@ -27,19 +31,19 @@ const CompanyProfilePage = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
         {/* Left Section */}
         <div className="col-span-1 bg-white">
           {/* Profile */}
-          <div className="bg-gray-100 py-3 flex items-center justify-between px-4">
-            <h2 className="text-base font-semibold  text-gray-800">Profile</h2>
+          <div className="relative bg-gray-100 h-12 flex items-center justify-center px-4">
+            <h2 className="m-0 text-base font-semibold text-gray-800" style={{ width: "100%", textAlign: "center", lineHeight: "48px" }}>Profile</h2>
 
             {/* modal  */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="bg-gray-100 text-gray-600"
+                  className="absolute right-4 bg-gray-100 text-gray-600"
                   size="icon"
                   onClick={handleModalClose}
                 >
@@ -116,7 +120,7 @@ const CompanyProfilePage = () => {
             {/* Basic Info */}
             <div className="mt-6 rounded-2xl border bg-white shadow-sm overflow-hidden">
               {/* Header */}
-              <div className="bg-gray-50 px-5 py-3 border-b">
+              <div className="relative bg-gray-50 h-12 flex items-center justify-center px-5 border-b">
                 <h2 className="text-sm font-semibold text-gray-800">
                   Basic Information
                 </h2>
@@ -169,7 +173,7 @@ const CompanyProfilePage = () => {
             {/* Contact Info */}
             <div className="mt-6 rounded-2xl border bg-white shadow-sm overflow-hidden">
               {/* Header */}
-              <div className="bg-gray-50 px-5 py-3 border-b">
+              <div className="relative bg-gray-50 h-12 flex items-center justify-center px-5 border-b">
                 <h2 className="text-sm font-semibold text-gray-800">
                   Primary Contact Info
                 </h2>
@@ -216,8 +220,8 @@ const CompanyProfilePage = () => {
         <div className="col-span-2 space-y-6 bg-white p-4">
           {/* ADDRESS */}
           <div className="rounded-2xl border bg-white shadow-sm overflow-hidden">
-            <div className="bg-gray-50 px-5 py-3 border-b">
-              <h2 className="text-sm font-semibold text-gray-800">Address</h2>
+            <div className="relative bg-gray-50 h-12 flex items-center justify-center px-5 border-b">
+              <h2 className="m-0 text-sm font-semibold text-gray-800" style={{ width: "100%", textAlign: "center", lineHeight: "48px" }}>Address</h2>
             </div>
 
             <div className="p-5 space-y-5">
@@ -249,7 +253,7 @@ const CompanyProfilePage = () => {
 
           {/* BANK DETAILS */}
           <div className="rounded-2xl border bg-white shadow-sm overflow-hidden">
-            <div className="bg-gray-50 px-5 py-3 border-b">
+            <div className="relative bg-gray-50 h-12 flex items-center justify-center px-5 border-b">
               <h2 className="text-sm font-semibold text-gray-800">
                 Bank Details
               </h2>
@@ -291,7 +295,7 @@ const CompanyProfilePage = () => {
 
           {/* DOCUMENTS */}
           <div className="rounded-2xl border bg-white shadow-sm overflow-hidden">
-            <div className="bg-gray-50 px-5 py-3 border-b">
+            <div className="relative bg-gray-50 h-12 flex items-center justify-center px-5 border-b">
               <h2 className="text-sm font-semibold text-gray-800">Documents</h2>
             </div>
 

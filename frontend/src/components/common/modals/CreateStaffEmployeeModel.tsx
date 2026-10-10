@@ -42,6 +42,8 @@ const CreateStaffEmployeeModel: React.FC<CreateStaffEmployeeModelProps> = ({
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [departmentSearch, setDepartmentSearch] = useState("");
+  const [designationSearch, setDesignationSearch] = useState("");
 
   const [addThumbnail, { isLoading: uploading }] = useAddThumbnailMutation();
   const [createEmployee, { isLoading: isCreating }] =
@@ -62,8 +64,8 @@ const CreateStaffEmployeeModel: React.FC<CreateStaffEmployeeModelProps> = ({
     resolver: zodResolver(employeeSchema),
   });
 
-  const { data: departmentsData } = useGetAllDepartmentsQuery({});
-  const { data: designationsData } = useGetAllDesignationsQuery({});
+  const { data: departmentsData } = useGetAllDepartmentsQuery({ page: 1, size: 100000 });
+  const { data: designationsData } = useGetAllDesignationsQuery({ page: 1, size: 100000 });
 
   /** Initialize form with default branch or editing data */
   useEffect(() => {
@@ -192,6 +194,13 @@ const CreateStaffEmployeeModel: React.FC<CreateStaffEmployeeModelProps> = ({
 
   const isLoading = isCreating || isUpdating || uploading || isSubmitting;
 
+  const filteredDepartments = (departmentsData?.data || []).filter((department) =>
+    department.name.toLowerCase().includes(departmentSearch.toLowerCase()),
+  );
+  const filteredDesignations = (designationsData?.data || []).filter((designation) =>
+    designation.name.toLowerCase().includes(designationSearch.toLowerCase()),
+  );
+
   const designationId = watch("designationId")
 
   if (editingEmployee) {
@@ -241,9 +250,17 @@ const CreateStaffEmployeeModel: React.FC<CreateStaffEmployeeModelProps> = ({
             <SelectTrigger>
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
-            <SelectContent>
-              {departmentsData?.data?.length ? (
-                departmentsData.data.map((d) => (
+            <SelectContent className="max-h-60 overflow-y-auto">
+              <input
+                value={departmentSearch}
+                onChange={(event) => setDepartmentSearch(event.target.value)}
+                onPointerDown={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+                placeholder="Search department..."
+                className="mx-1 mb-1 h-8 w-[calc(100%-0.5rem)] rounded border border-gray-200 px-2 text-sm outline-none"
+              />
+              {filteredDepartments.length ? (
+                filteredDepartments.map((d) => (
                   <SelectItem key={d.id} value={String(d.id)}>
                     {d.name}
                   </SelectItem>
@@ -273,9 +290,17 @@ const CreateStaffEmployeeModel: React.FC<CreateStaffEmployeeModelProps> = ({
             <SelectTrigger>
               <SelectValue placeholder="Select designation" />
             </SelectTrigger>
-            <SelectContent>
-              {designationsData?.data?.length ? (
-                designationsData.data.map((d) => (
+            <SelectContent className="max-h-60 overflow-y-auto">
+              <input
+                value={designationSearch}
+                onChange={(event) => setDesignationSearch(event.target.value)}
+                onPointerDown={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+                placeholder="Search designation..."
+                className="mx-1 mb-1 h-8 w-[calc(100%-0.5rem)] rounded border border-gray-200 px-2 text-sm outline-none"
+              />
+              {filteredDesignations.length ? (
+                filteredDesignations.map((d) => (
                   <SelectItem key={d.id} value={String(d.id)}>
                     {d.name}
                   </SelectItem>

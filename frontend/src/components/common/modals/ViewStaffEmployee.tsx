@@ -29,14 +29,12 @@ const ViewStaffEmployee = () => {
     "-";
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-6 xl:grid-cols-7 2xl:md:grid-cols-6  gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-6 xl:grid-cols-7 2xl:md:grid-cols-6 gap-6 pt-2">
 
       {/* Left Section */}
       <div className="md:col-span-3 xl:col-span-3 2xl:col-span-2 bg-white">
         {/* Profile */}
-        <div className="bg-gray-100 py-3">
-          <h2 className="text-base font-semibold px-4 text-gray-800">Profile</h2>
-        </div>
+        <div className="bg-gray-100 min-h-[48px] flex items-center justify-center px-4"><h2 className="m-0 w-full translate-y-1 text-center text-base font-semibold text-gray-800">Profile</h2></div>
         <div className="p-3">
           <div className="flex gap-3 items-center text-start">
             <div>
@@ -132,9 +130,7 @@ const ViewStaffEmployee = () => {
       {/* Right Section */}
       <div className="md:col-span-3 xl:col-span-4 2xl:col-span-4">
         {/* Address */}
-        <div className="bg-gray-100 py-3">
-          <h2 className="text-base font-semibold px-4 text-gray-800">Address</h2>
-        </div>
+        <div className="bg-gray-100 min-h-[48px] flex items-center justify-center px-4"><h2 className="m-0 w-full translate-y-1 text-center text-base font-semibold text-gray-800">Address</h2></div>
         <div className="p-4 bg-white">
           <div className="text-sm text-gray-600 space-y-2">
             <div className="flex items-center gap-4">

@@ -42,6 +42,7 @@ const JournalVoucherList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [voucherToDelete, setVoucherToDelete] = useState<any | null>(null);
@@ -57,6 +58,7 @@ const JournalVoucherList: React.FC = () => {
       page: rowsPerPage === null ? 1 : page,
       size: rowsPerPage === null ? 99999 : rowsPerPage,
       search: searchTerm,
+      date: selectedDate,
       type: "JOURNAL",
       archived: activeTab === "archived", // নতুন
     });
@@ -91,9 +93,18 @@ const JournalVoucherList: React.FC = () => {
   };
 
   // --- Filter + Pagination ---
-  const filteredData = dynamicData.filter((item) =>
-    item.invoice.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredData = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    const dateTerm = selectedDate ? selectedDate.split("-").reverse().join("/") : "";
+    return dynamicData.filter((item) => {
+      const matchesSearch =
+        !term ||
+        [item.id, item.invoice, item.date, item.debit, item.credit, item.note]
+          .some((value) => String(value).toLowerCase().includes(term));
+      const matchesDate = !dateTerm || item.date === dateTerm;
+      return matchesSearch && matchesDate;
+    });
+  }, [dynamicData, searchTerm, selectedDate]);
 
   const totalItems = voucherData?.meta?.total || filteredData.length;
   const paginatedData = filteredData;
@@ -297,8 +308,14 @@ const JournalVoucherList: React.FC = () => {
         createButtonLabel="Create"
         createButtonIcon={<Plus size={20} />}
         createButtonLink="/create-journal-voucher"
-        searchPlaceholder="Search by invoice"
+        searchPlaceholder="Search SL/invoice/date/debit/credit/note..."
       />
+
+      <div className="flex items-center gap-3 rounded-md border border-gray-200 bg-white px-3 py-2">
+        <label className="text-sm text-gray-600" htmlFor="voucher-date-filter">Date</label>
+        <input id="voucher-date-filter" type="date" value={selectedDate} onChange={(event) => { setSelectedDate(event.target.value); setPage(1); }} className="rounded border border-gray-300 px-2 py-1 text-sm" />
+        {selectedDate && <button type="button" onClick={() => { setSelectedDate(""); setPage(1); }} className="h-8 rounded border border-gray-200 bg-white px-3 text-sm text-gray-600 hover:bg-gray-100">Clear</button>}
+      </div>
 
       {/* Tab Buttons — নতুন */}
       <div className="flex gap-0 border-b border-gray-200">

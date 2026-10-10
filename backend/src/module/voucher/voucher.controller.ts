@@ -155,7 +155,7 @@ export const createVoucher = async (
 
 export const getAllVouchers = async (req: Request, res: Response) => {
   try {
-    const { page = 1, size = 10, branchId, search, type ,archived } = req.query;
+    const { page = 1, size = 10, branchId, search, type ,archived, date } = req.query;
 
     if (!branchId) {
       return res.status(400).json({
@@ -177,11 +177,61 @@ export const getAllVouchers = async (req: Request, res: Response) => {
     whereCondition.isArchived = showArchived;
 
     if (type) whereCondition.type = type;
+    if (date) {
+      const dateStart = new Date(`${date}T00:00:00.000Z`);
+      if (!Number.isNaN(dateStart.getTime())) {
+        const dateEnd = new Date(dateStart);
+        dateEnd.setUTCDate(dateEnd.getUTCDate() + 1);
+        whereCondition.date = { gte: dateStart, lt: dateEnd };
+      }
+    }
     if (search) {
-      whereCondition.OR = [
-        { narration: { contains: String(search) } },
-        { voucherNo: { contains: String(search) } }, // ← এটা যোগ করো
+      const searchValue = String(search).trim();
+      const searchFilters: any[] = [
+        { narration: { contains: searchValue } },
+        { voucherNo: { contains: searchValue } },
       ];
+
+      const numericValue = Number(searchValue.replace(/,/g, ""));
+      if (searchValue !== "" && Number.isFinite(numericValue)) {
+        searchFilters.push({ id: numericValue });
+
+        // Match numeric amounts by text so partial searches such as 30 find 300000.
+        const amountMatches = await prisma.$queryRaw<Array<{ voucherId: number }>>`
+          SELECT DISTINCT pov.voucherId
+          FROM ParticularOnVoucher pov
+          INNER JOIN Voucher v ON v.id = pov.voucherId
+          WHERE v.branchId = ${Number(branchId)}
+            AND v.isArchived = ${showArchived}
+            AND CAST(pov.amount AS CHAR) LIKE ${`%${searchValue}%`}
+        `;
+        const matchingVoucherIds = amountMatches.map((row) => row.voucherId);
+        if (matchingVoucherIds.length > 0) {
+          searchFilters.push({ id: { in: matchingVoucherIds } });
+        }
+      }
+
+      const dateMatch =
+        /^(?:(\d{4})[-/](\d{1,2})[-/](\d{1,2})|(\d{1,2})[-/](\d{1,2})[-/](\d{4}))$/.exec(
+          searchValue,
+        );
+      if (dateMatch) {
+        const year = Number(dateMatch[1] || dateMatch[6]);
+        const month = Number(dateMatch[2] || dateMatch[5]);
+        const day = Number(dateMatch[3] || dateMatch[4]);
+        const dateStart = new Date(Date.UTC(year, month - 1, day));
+        if (
+          dateStart.getUTCFullYear() === year &&
+          dateStart.getUTCMonth() === month - 1 &&
+          dateStart.getUTCDate() === day
+        ) {
+          const dateEnd = new Date(dateStart);
+          dateEnd.setUTCDate(dateEnd.getUTCDate() + 1);
+          searchFilters.push({ date: { gte: dateStart, lt: dateEnd } });
+        }
+      }
+
+      whereCondition.OR = searchFilters;
     }
 
     const [vouchers, total] = await Promise.all([

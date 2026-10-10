@@ -326,6 +326,18 @@ const ParticularAccountList: React.FC = () => {
             }}
             className="h-8 rounded border border-gray-200 bg-white px-2 text-sm"
           />
+          {createdDate && (
+            <button
+              type="button"
+              onClick={() => {
+                setCreatedDate("");
+                setPage(1);
+              }}
+              className="h-8 rounded border border-gray-200 bg-white px-3 text-sm text-gray-600 hover:bg-gray-100"
+            >
+              Clear
+            </button>
+          )}
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span>Row per page</span>
