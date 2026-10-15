@@ -25,11 +25,13 @@ import getPermission from "@/utils/helper/getPermission";
 import toast from "react-hot-toast";
 import { DeleteConfirmModal } from "@/components/common/modals/DeleteConfirmModal";
 import ReusableTableHeader from "@/components/common/ReusableTableHeader";
+import VoucherDateRangeFilter from "@/components/common/VoucherDateRangeFilter";
 
 interface VoucherRowType {
   id: number;
   invoice: string;
   date: string;
+  rawDate: string;
   debit: string;
   credit: string;
   note: string;
@@ -39,7 +41,8 @@ const ReceiptVoucherList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [voucherToDelete, setVoucherToDelete] = useState<any | null>(null);
@@ -54,7 +57,8 @@ const ReceiptVoucherList: React.FC = () => {
       page,
       size: rowsPerPage,
       search: searchTerm,
-      date: selectedDate,
+      fromDate,
+      toDate,
       type: "RECEIPT",
       archived: activeTab === "archived",
     });
@@ -72,6 +76,7 @@ const ReceiptVoucherList: React.FC = () => {
         id: voucher.id,
         invoice: voucher.voucherNo,
         date: new Date(voucher.date).toLocaleDateString("en-GB"),
+        rawDate: voucher.date,
         debit: totalDebit.toString(),
         credit: totalCredit.toString(),
         note: voucher.narration || "N/A",
@@ -79,19 +84,27 @@ const ReceiptVoucherList: React.FC = () => {
     });
   }, [voucherData]);
 
-  const filteredData = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    const dateTerm = selectedDate ? selectedDate.split("-").reverse().join("/") : "";
-    return dynamicData.filter((item) => {
-      const matchesSearch =
-        !term ||
-        [item.id, item.invoice, item.date, item.debit, item.credit, item.note]
-          .some((value) => String(value).toLowerCase().includes(term));
-      const matchesDate = !dateTerm || item.date === dateTerm;
-      return matchesSearch && matchesDate;
-    });
-  }, [dynamicData, searchTerm, selectedDate]);
-  const totalItems = voucherData?.meta?.total || filteredData.length;
+  const filteredData = dynamicData.filter((item) => {
+    const search = searchTerm.toLowerCase();
+    const matchesSearch = item.invoice.toLowerCase().includes(search);
+    const itemDate = new Date(item.rawDate);
+    itemDate.setHours(0, 0, 0, 0);
+    const fromDateValue = fromDate ? new Date(fromDate) : null;
+    const toDateValue = toDate ? new Date(toDate) : null;
+    fromDateValue?.setHours(0, 0, 0, 0);
+    toDateValue?.setHours(23, 59, 59, 999);
+    const itemTime = itemDate.getTime();
+    const fromTime = fromDateValue?.getTime();
+    const toTime = toDateValue?.getTime();
+    const matchesFromDate = fromTime === undefined || itemTime >= fromTime;
+    const matchesToDate = toTime === undefined || itemTime <= toTime;
+
+    return matchesSearch && matchesFromDate && matchesToDate;
+  });
+  const hasDateRangeFilter = Boolean(fromDate || toDate);
+  const totalItems = hasDateRangeFilter
+    ? filteredData.length
+    : voucherData?.meta?.total || filteredData.length;
   const paginatedData = filteredData;
 
   const handleSelectAll = (checked: boolean) => {
@@ -144,6 +157,8 @@ const ReceiptVoucherList: React.FC = () => {
     setActiveTab(tab);
     setPage(1);
     setSearchTerm("");
+    setFromDate("");
+    setToDate("");
     setSelectedRows([]);
   };
 
@@ -275,34 +290,26 @@ const ReceiptVoucherList: React.FC = () => {
         createButtonLabel="Create"
         createButtonIcon={<Plus size={20} />}
         createButtonLink="/create-receipt-voucher"
-        searchPlaceholder="Search SL/invoice/date/debit/credit/note..."
+        searchPlaceholder="Search by invoice"
       />
 
-      <div className="flex items-center gap-3 rounded-md border border-gray-200 bg-white px-3 py-2">
-        <label className="text-sm text-gray-600" htmlFor="voucher-date-filter">Date</label>
-        <input
-          id="voucher-date-filter"
-          type="date"
-          value={selectedDate}
-          onChange={(event) => {
-            setSelectedDate(event.target.value);
-            setPage(1);
-          }}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
-        />
-        {selectedDate && (
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedDate("");
-              setPage(1);
-            }}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Clear
-          </button>
-        )}
-      </div>
+      <VoucherDateRangeFilter
+        fromDate={fromDate}
+        toDate={toDate}
+        onFromDateChange={(value) => {
+          setFromDate(value);
+          setPage(1);
+        }}
+        onToDateChange={(value) => {
+          setToDate(value);
+          setPage(1);
+        }}
+        onClear={() => {
+          setFromDate("");
+          setToDate("");
+          setPage(1);
+        }}
+      />
 
       <div className="flex gap-0 border-b border-gray-200">
         <button

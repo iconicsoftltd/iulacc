@@ -49,6 +49,10 @@ import {
   receiptVoucherSchema,
 } from "@/schemas/voucher/voucherSchema";
 import { generateVoucherNo } from "@/utils/helper/randomValueGenerator";
+import {
+  focusNextVoucherAmount,
+  focusNextVoucherParticular,
+} from "@/utils/helper/voucherKeyboardFocus";
 import { useSelector } from "react-redux";
 import { selectDatePermission } from "@/components/store/store";
 
@@ -265,7 +269,11 @@ const CreateReceiptVoucherList = () => {
                     render={({ field }) => (
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full">
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            data-voucher-particular-index={index}
+                          >
                             {selectedParticular?.accountType ||
                               selectedParticular?.name ||
                               selectedParticular?.ledger?.ledgerType ||
@@ -284,7 +292,10 @@ const CreateReceiptVoucherList = () => {
                                 {options?.map((item: any) => (
                                   <CommandItem
                                     key={item.id}
-                                    onSelect={() => field.onChange(item.id)}
+                                    onSelect={() => {
+                                      field.onChange(item.id);
+                                      focusNextVoucherParticular(index);
+                                    }}
                                   >
                                     <FaCheck
                                       className={cn(
@@ -314,6 +325,13 @@ const CreateReceiptVoucherList = () => {
                     render={({ field }) => (
                       <Input
                         type="number"
+                        data-voucher-amount-index={index}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            focusNextVoucherAmount(index);
+                          }
+                        }}
                         disabled={entryType !== "Debit"}
                         value={entryType === "Debit" ? field.value : ""}
                         onChange={(e) =>
@@ -334,6 +352,13 @@ const CreateReceiptVoucherList = () => {
                     render={({ field }) => (
                       <Input
                         type="number"
+                        data-voucher-amount-index={index}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            focusNextVoucherAmount(index);
+                          }
+                        }}
                         disabled={entryType !== "Credit"}
                         value={entryType === "Credit" ? field.value : ""}
                         onChange={(e) =>

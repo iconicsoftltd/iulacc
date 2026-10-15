@@ -26,6 +26,10 @@ import { useGetAllParticularQuery } from "@/components/store/api/particularAccou
 import { useCreateVoucherMutation } from "@/components/store/api/voucher/receiptVoucherApi";
 
 import { generateVoucherNo } from "@/utils/helper/randomValueGenerator";
+import {
+  focusNextVoucherAmount,
+  focusNextVoucherParticular,
+} from "@/utils/helper/voucherKeyboardFocus";
 
 import ButtonLoader from "@/components/loader/ButtonLoader";
 import HomeLoader from "@/components/loader/HomeLoader";
@@ -230,11 +234,17 @@ const CreateJournalVoucher = () => {
                   name={`entries.${index}.particularId`}
                   render={({ field }) => (
                     <Select
-                      onValueChange={(v) => field.onChange(Number(v))}
+                      onValueChange={(v) => {
+                        field.onChange(Number(v));
+                        focusNextVoucherParticular(index);
+                      }}
                       value={field.value?.toString()}
                       onOpenChange={(open) => !open && setSearchTerm("")}
                     >
-                      <SelectTrigger className="border border-gray-400">
+                      <SelectTrigger
+                        className="border border-gray-400"
+                        data-voucher-particular-index={index}
+                      >
                         <SelectValue placeholder="Select Particular" />
                       </SelectTrigger>
                       <SelectContent>
@@ -279,7 +289,14 @@ const CreateJournalVoucher = () => {
                   render={({ field }) => (
                     <Input
                       type="number"
+                      data-voucher-amount-index={index}
                       className="text-center"
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          focusNextVoucherAmount(index);
+                        }
+                      }}
                       disabled={watch(`entries.${index}.type`) !== "Debit"}
                       placeholder="0"
                       value={
@@ -303,7 +320,14 @@ const CreateJournalVoucher = () => {
                   render={({ field }) => (
                     <Input
                       type="number"
+                      data-voucher-amount-index={index}
                       className="text-center"
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          focusNextVoucherAmount(index);
+                        }
+                      }}
                       disabled={watch(`entries.${index}.type`) !== "Credit"}
                       placeholder="0"
                       value={

@@ -19,13 +19,22 @@ export const voucherApi = apiSlice.injectEndpoints({
     // GET ALL VOUCHERS
     getAllVouchers: builder.query({
       // ↓ archived param যোগ হয়েছে
-      query: ({ page = 1, size = 10, search = "", type = "", archived = false, date = "" }) => {
+      query: ({
+        page = 1,
+        size = 10,
+        search = "",
+        type = "",
+        archived = false,
+        fromDate = "",
+        toDate = "",
+      }) => {
         const selectedBranch = localStorage.getItem("selectedBranch");
         const branchId = selectedBranch ? JSON.parse(selectedBranch).id : "";
         let queryParams = `?page=${page}&size=${size}&type=${type}`;
         if (search) queryParams += `&search=${encodeURIComponent(search)}`;
+        if (fromDate) queryParams += `&fromDate=${encodeURIComponent(fromDate)}`;
+        if (toDate) queryParams += `&toDate=${encodeURIComponent(toDate)}`;
         if (branchId) queryParams += `&branchId=${branchId}`;
-        if (date) queryParams += `&date=${encodeURIComponent(date)}`;
         // ↓ নতুন লাইন
         queryParams += `&archived=${archived}`;
         return {

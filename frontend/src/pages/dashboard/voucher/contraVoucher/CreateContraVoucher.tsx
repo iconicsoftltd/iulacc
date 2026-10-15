@@ -23,6 +23,10 @@ import { useGetAllAccountsParticularQuery } from "@/components/store/api/particu
 import { useCreateVoucherMutation } from "@/components/store/api/voucher/receiptVoucherApi";
 
 import { generateVoucherNo } from "@/utils/helper/randomValueGenerator";
+import {
+  focusNextVoucherAmount,
+  focusNextVoucherParticular,
+} from "@/utils/helper/voucherKeyboardFocus";
 
 import HomeLoader from "@/components/loader/HomeLoader";
 import ButtonLoader from "@/components/loader/ButtonLoader";
@@ -247,10 +251,16 @@ const CreateContraVoucher = () => {
                   name={`entries.${index}.particularId`}
                   render={({ field }) => (
                     <Select
-                      onValueChange={(v) => field.onChange(Number(v))}
+                      onValueChange={(v) => {
+                        field.onChange(Number(v));
+                        focusNextVoucherParticular(index);
+                      }}
                       value={field.value?.toString()}
                     >
-                      <SelectTrigger className="border border-gray-400">
+                      <SelectTrigger
+                        className="border border-gray-400"
+                        data-voucher-particular-index={index}
+                      >
                         <SelectValue placeholder={"Select one"} />
                       </SelectTrigger>
                       <SelectContent>
@@ -290,7 +300,14 @@ const CreateContraVoucher = () => {
                   render={({ field }) => (
                     <Input
                       type="number"
+                      data-voucher-amount-index={index}
                       className="text-center"
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          focusNextVoucherAmount(index);
+                        }
+                      }}
                       disabled={watch(`entries.${index}.type`) !== "Debit"}
                       placeholder="0"
                       value={
@@ -315,7 +332,14 @@ const CreateContraVoucher = () => {
                   render={({ field }) => (
                     <Input
                       type="number"
+                      data-voucher-amount-index={index}
                       className="text-center"
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          focusNextVoucherAmount(index);
+                        }
+                      }}
                       disabled={watch(`entries.${index}.type`) !== "Credit"}
                       placeholder="0"
                       value={
