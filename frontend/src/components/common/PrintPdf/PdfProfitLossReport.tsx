@@ -1,9 +1,11 @@
 import { appConfiguration } from "@/utils/constant/appConfiguration";
+import { formatWithDrCr } from "@/utils/helper/accountingFormat";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const PdfProfitLossReport = (
   reportData: any,
+  currentCurrency: any,
   queryParams: any,
   reportType: string
 ) => {
@@ -32,7 +34,7 @@ const PdfProfitLossReport = (
     const titleY = logoY + logoHeight + 8;
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text("Profit & Loss Report", pageWidth / 2, titleY, {
+    doc.text("Profit & Loss Statement", pageWidth / 2, titleY, {
       align: "center",
     });
 
@@ -63,22 +65,32 @@ const PdfProfitLossReport = (
 
   // ================= Table Body =================
   const tableBody: any[] = report
-    ? Object.entries(report).map(([key, value]) => {
-        const formattedKey = key
-          .replace(/([A-Z])/g, " $1")
-          .replace(/_/g, " ")
-          .replace(/\s+/g, " ")
-          .trim()
-          .replace(/\b\w/g, (c) => c.toUpperCase());
-
-        return [
-          { content: formattedKey, styles: { fontStyle: "bold" as const } },
-          {
-            content: String(value),
-            styles: { halign: "right", fontStyle: "bold" as const },
-          }, // RAW value
-        ];
-      })
+    ? [
+        ["Total Sales Revenue", formatWithDrCr(report.totalSales, "Cr")],
+        ["Cost of Goods Sold (COGS)", formatWithDrCr(report.purchaseAmount, "Dr")],
+        ["Gross Profit", formatWithDrCr(report.grossProfit)],
+        ["Administrative Expenses", formatWithDrCr(report.adminExpenses, "Dr")],
+        ["Selling & Distribution Expenses", formatWithDrCr(report.sellingExpenses, "Dr")],
+        ["Other Non-Operating Income", formatWithDrCr(report.nonOperatingIncome, "Cr")],
+        ["Earnings Before Tax (EBT)", formatWithDrCr(report.earningBeforeTax)],
+        ["Income Tax Expense", formatWithDrCr(report.taxAmount, "Dr")],
+        ["NET EARNINGS AFTER TAX", formatWithDrCr(report.earningAfterTax)],
+      ].map(([label, value], index) => [
+        {
+          content: label,
+          styles: {
+            fontStyle: index === 2 || index === 6 || index === 8 ? "bold" as const : "normal" as const,
+          },
+        },
+        {
+          content: value,
+          styles: {
+            halign: "right" as const,
+            fontStyle: "bold" as const,
+            textColor: index === 8 && Number(report.earningAfterTax) < 0 ? [248, 113, 113] : [0, 0, 0],
+          },
+        },
+      ])
     : [
         [
           {
@@ -92,7 +104,7 @@ const PdfProfitLossReport = (
   // ================= Generate Table =================
   autoTable(doc, {
     startY: margin + 45,
-    head: [], // no headings
+    head: [["Description", `Amount (${currentCurrency?.name ?? ""})`]],
     body: tableBody,
     theme: "grid",
     styles: {
@@ -100,6 +112,11 @@ const PdfProfitLossReport = (
       cellPadding: 3,
       lineColor: [209, 213, 219],
       lineWidth: 0.5,
+    },
+    headStyles: {
+      fillColor: [192, 0, 180],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
     },
     columnStyles: {
       0: { cellWidth: "auto" }, // key column auto width

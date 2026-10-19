@@ -14,6 +14,7 @@ import { selectCurrentCurrency } from "@/components/store/store";
 import Heading from "@/components/typography/Heading";
 import { Button } from "@/components/ui/button";
 import ReportDateSelector from "@/utils/helper/ReportDateSelector";
+import GeneralLedgerModal, { SelectedLedger } from "@/components/common/GeneralLedgerModal";
 
 export default function TrialBalancePage() {
   const today = dayjs().format("YYYY-MM-DD");
@@ -26,6 +27,7 @@ export default function TrialBalancePage() {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
+  const [selectedLedger, setSelectedLedger] = useState<SelectedLedger | null>(null);
 
   const currentCurrency = useSelector(selectCurrentCurrency);
   const { data: trialBalanceData, isLoading, isError } = useFetchTrialBalanceQuery(queryParams);
@@ -99,13 +101,17 @@ export default function TrialBalancePage() {
           Failed to fetch Trial Balance. Please check your connection.
         </div>
       ) : trialBalanceData?.data ? (
-        <CashSummaryTable data={trialBalanceData.data as CashFlowData} />
+        <CashSummaryTable
+          data={trialBalanceData.data as CashFlowData}
+          onAccountClick={(item) => item.particularId && setSelectedLedger({ particularId: item.particularId, accountName: item.accountDescription })}
+        />
       ) : (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-zinc-300">
           <FaInbox className="text-zinc-200 text-6xl mb-4" />
           <p className="text-zinc-500 font-medium">No records found for this period.</p>
         </div>
       )}
+      <GeneralLedgerModal ledger={selectedLedger} fromDate={queryParams.fromDate} toDate={queryParams.toDate} onClose={() => setSelectedLedger(null)} />
     </div>
   );
 }

@@ -69,6 +69,7 @@ const CreateContraVoucher = () => {
   const navigate = useNavigate();
   const datePermission = useSelector(selectDatePermission);
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [searchTerm, setSearchTerm] = useState("");
   const [createVoucher, { isLoading: createVoucherLoading }] =
     useCreateVoucherMutation();
 
@@ -101,6 +102,11 @@ const CreateContraVoucher = () => {
 
   // Contra rule: both Dr and Cr only show Cash/Bank particulars
   const cashBankOptions = uniqueCashBankOptions(accounts?.data || []);
+  const filteredCashBankOptions = cashBankOptions.filter((item: any) =>
+    String(item?.accountType || item?.name || "")
+      .toLowerCase()
+      .includes(searchTerm.trim().toLowerCase()),
+  );
 
   const accountCurrentBalance = cashBankOptions.find(
     (account: any) => account?.id === watch("entries")?.[0]?.particularId,
@@ -217,8 +223,6 @@ const CreateContraVoucher = () => {
         {/* Dynamic Rows */}
         {fields.map((field, index) => {
           const isAccount = index === 0;
-          // Contra rule: both Dr & Cr only show Cash/Bank particulars
-          const options = cashBankOptions;
 
           return (
             <div
@@ -256,6 +260,20 @@ const CreateContraVoucher = () => {
                         focusNextVoucherParticular(index);
                       }}
                       value={field.value?.toString()}
+                      onOpenChange={(open) => {
+                        if (!open) {
+                          setSearchTerm("");
+                          return;
+                        }
+
+                        requestAnimationFrame(() => {
+                          document
+                            .querySelector<HTMLInputElement>(
+                              `[data-voucher-search-index="${index}"]`,
+                            )
+                            ?.focus();
+                        });
+                      }}
                     >
                       <SelectTrigger
                         className="border border-gray-400"
@@ -264,7 +282,16 @@ const CreateContraVoucher = () => {
                         <SelectValue placeholder={"Select one"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {options?.map((item: any) => (
+                        <div className="p-2">
+                          <Input
+                            data-voucher-search-index={index}
+                            placeholder="Search..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                        {filteredCashBankOptions.map((item: any) => (
                           <SelectItem key={item.id} value={item.id.toString()}>
                             {item.accountType} ({item?.ledger?.ledgerType})
                           </SelectItem>

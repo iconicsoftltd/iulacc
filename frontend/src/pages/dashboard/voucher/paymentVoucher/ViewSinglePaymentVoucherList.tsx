@@ -1,14 +1,15 @@
 import { useVoucherPrint } from "@/components/common/voucherPrintPdf/VoucherPrint";
+import { downloadVoucherPdf } from "@/components/common/voucherPrintPdf/VoucherPdf";
 import HomeLoader from "@/components/loader/HomeLoader";
 import { useGetVoucherByIdQuery } from "@/components/store/api/voucher/receiptVoucherApi";
 import Heading from "@/components/typography/Heading";
 import { Button } from "@/components/ui/button";
 import { appConfiguration } from "@/utils/constant/appConfiguration";
+import { numberToBangladeshiCurrencyWords } from "@/utils/helper/numberToBangladeshiWords";
 import { FaMailBulk } from "react-icons/fa";
-import { FaEarthAfrica, FaLocationArrow, FaPhone } from "react-icons/fa6";
+import { FaEarthAfrica, FaFilePdf, FaLocationArrow, FaPhone } from "react-icons/fa6";
 import { GrNotes } from "react-icons/gr";
 import { useNavigate, useParams } from "react-router-dom";
-import numberToWords from "number-to-words";
 
 const ViewSinglePaymentVoucherList = () => {
   const { id } = useParams();
@@ -32,13 +33,11 @@ const ViewSinglePaymentVoucherList = () => {
     .reduce((sum, p) => sum + Number(p.amount), 0);
 
   // ✅ Convert total amount to words
-  const amountInWords =
-    numberToWords
-      .toWords(totalDebit || totalCredit)
-      .replace(/^\w/, (c) => c.toUpperCase()) + " Taka Only";
+  const amountInWords = numberToBangladeshiCurrencyWords(totalDebit || totalCredit);
 
   // ✅ Prepare data for print
   const voucherData = {
+    voucherTitle: "Payment Voucher",
     config: {
       logo: appConfiguration?.logo,
       address: appConfiguration?.address,
@@ -57,6 +56,7 @@ const ViewSinglePaymentVoucherList = () => {
     totalDebit,
     totalCredit,
     amountInWords,
+    narration: voucher.narration,
   };
 
   return (
@@ -200,6 +200,14 @@ const ViewSinglePaymentVoucherList = () => {
         >
           <span>Print</span>
           <GrNotes />
+        </Button>
+        <Button
+          onClick={() => downloadVoucherPdf(voucherData)}
+          variant="destructive"
+          className="bg-red-600 hover:bg-red-700 text-white px-6 rounded-none flex items-center gap-2"
+        >
+          <span>PDF</span>
+          <FaFilePdf />
         </Button>
         <Button
           variant="outline"

@@ -239,7 +239,20 @@ const CreateJournalVoucher = () => {
                         focusNextVoucherParticular(index);
                       }}
                       value={field.value?.toString()}
-                      onOpenChange={(open) => !open && setSearchTerm("")}
+                      onOpenChange={(open) => {
+                        if (!open) {
+                          setSearchTerm("");
+                          return;
+                        }
+
+                        requestAnimationFrame(() => {
+                          document
+                            .querySelector<HTMLInputElement>(
+                              `[data-voucher-search-index="${index}"]`,
+                            )
+                            ?.focus();
+                        });
+                      }}
                     >
                       <SelectTrigger
                         className="border border-gray-400"
@@ -250,6 +263,7 @@ const CreateJournalVoucher = () => {
                       <SelectContent>
                         <div className="p-2">
                           <Input
+                            data-voucher-search-index={index}
                             placeholder="Search..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}

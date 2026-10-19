@@ -12,6 +12,7 @@ import { selectCurrentCurrency } from "@/components/store/store";
 import Heading from "@/components/typography/Heading";
 import { Button } from "@/components/ui/button";
 import ReportDateSelector from "@/utils/helper/ReportDateSelector";
+import GeneralLedgerModal, { SelectedLedger } from "@/components/common/GeneralLedgerModal";
 // Import your common helper
 import { formatWithDrCr } from "@/utils/helper/accountingFormat";
 
@@ -26,6 +27,13 @@ interface ProfitLossData {
   earningBeforeTax: number;
   taxAmount: number;
   earningAfterTax: number;
+  drilldownIds: {
+    totalSales: number[];
+    purchaseAmount: number[];
+    adminExpenses: number[];
+    sellingExpenses: number[];
+    nonOperatingIncome: number[];
+  };
 }
 
 const ProfitLossReport = () => {
@@ -40,6 +48,7 @@ const ProfitLossReport = () => {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [shouldFetch, setShouldFetch] = useState(false);
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
+  const [selectedLedger, setSelectedLedger] = useState<SelectedLedger | null>(null);
 
   const currentCurrency = useSelector(selectCurrentCurrency);
 
@@ -71,6 +80,13 @@ const ProfitLossReport = () => {
   );
 
   const report: ProfitLossData | undefined = data?.data;
+  const drilldownIds = report?.drilldownIds ?? {
+    totalSales: [],
+    purchaseAmount: [],
+    adminExpenses: [],
+    sellingExpenses: [],
+    nonOperatingIncome: [],
+  };
 
   const handlePrint = () => {
     if (!report) return;
@@ -79,7 +95,7 @@ const ProfitLossReport = () => {
 
   const handleDownloadPdf = () => {
     if (!report) return;
-    PdfProfitLossReport({ data: report }, queryParams, reportType);
+    PdfProfitLossReport({ data: report }, currentCurrency, queryParams, reportType);
   };
 
   return (
@@ -139,12 +155,12 @@ const ProfitLossReport = () => {
             <tbody className="divide-y divide-zinc-100">
               {/* --- Trading Account Section --- */}
               <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="px-6 py-4 text-zinc-700 font-medium">Total Sales Revenue</td>
+                <td className="px-6 py-4 text-zinc-700 font-medium"><button type="button" onClick={() => setSelectedLedger({ particularId: drilldownIds.totalSales, accountName: "Total Sales Revenue" })} disabled={!drilldownIds.totalSales.length} className="text-left text-sky-700 underline-offset-4 enabled:hover:underline disabled:text-zinc-700">Total Sales Revenue</button></td>
                 {/* <td className="px-6 py-4 text-right font-bold text-emerald-600">{formatWithDrCr(report.totalSales, "Cr")}</td> */}
                 <td className="px-6 py-4 text-right font-bold ">{formatWithDrCr(report.totalSales, "Cr")}</td>
               </tr>
               <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="px-6 py-4 text-zinc-700 font-medium">Cost of Goods Sold (COGS)</td>
+                <td className="px-6 py-4 text-zinc-700 font-medium"><button type="button" onClick={() => setSelectedLedger({ particularId: drilldownIds.purchaseAmount, accountName: "Cost of Goods Sold (COGS)" })} disabled={!drilldownIds.purchaseAmount.length} className="text-left text-sky-700 underline-offset-4 enabled:hover:underline disabled:text-zinc-700">Cost of Goods Sold (COGS)</button></td>
                 {/* <td className="px-6 py-4 text-right font-bold text-rose-600">{formatWithDrCr(report.purchaseAmount, "Dr")}</td> */}
                 <td className="px-6 py-4 text-right font-bold ">{formatWithDrCr(report.purchaseAmount, "Dr")}</td>
               </tr>
@@ -157,17 +173,17 @@ const ProfitLossReport = () => {
 
               {/* --- Operating Expenses Section --- */}
               <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="px-6 py-4 text-zinc-700 font-medium pl-10">Administrative Expenses</td>
+                <td className="px-6 py-4 text-zinc-700 font-medium pl-10"><button type="button" onClick={() => setSelectedLedger({ particularId: drilldownIds.adminExpenses, accountName: "Administrative Expenses" })} disabled={!drilldownIds.adminExpenses.length} className="text-left text-sky-700 underline-offset-4 enabled:hover:underline disabled:text-zinc-700">Administrative Expenses</button></td>
                 {/* <td className="px-6 py-4 text-right text-rose-600 font-semibold">{formatWithDrCr(report.adminExpenses, "Dr")}</td> */}
                 <td className="px-6 py-4 text-right  font-semibold">{formatWithDrCr(report.adminExpenses, "Dr")}</td>
               </tr>
               <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="px-6 py-4 text-zinc-700 font-medium pl-10">Selling & Distribution Expenses</td>
+                <td className="px-6 py-4 text-zinc-700 font-medium pl-10"><button type="button" onClick={() => setSelectedLedger({ particularId: drilldownIds.sellingExpenses, accountName: "Selling & Distribution Expenses" })} disabled={!drilldownIds.sellingExpenses.length} className="text-left text-sky-700 underline-offset-4 enabled:hover:underline disabled:text-zinc-700">Selling & Distribution Expenses</button></td>
                 {/* <td className="px-6 py-4 text-right text-rose-600 font-semibold">{formatWithDrCr(report.sellingExpenses, "Dr")}</td> */}
                 <td className="px-6 py-4 text-right  font-semibold">{formatWithDrCr(report.sellingExpenses, "Dr")}</td>
               </tr>
               <tr className="hover:bg-zinc-50/50 transition-colors">
-                <td className="px-6 py-4 text-zinc-700 font-medium pl-10">Other Non-Operating Income</td>
+                <td className="px-6 py-4 text-zinc-700 font-medium pl-10"><button type="button" onClick={() => setSelectedLedger({ particularId: drilldownIds.nonOperatingIncome, accountName: "Other Non-Operating Income" })} disabled={!drilldownIds.nonOperatingIncome.length} className="text-left text-sky-700 underline-offset-4 enabled:hover:underline disabled:text-zinc-700">Other Non-Operating Income</button></td>
                 {/* <td className="px-6 py-4 text-right text-emerald-600 font-semibold">{formatWithDrCr(report.nonOperatingIncome, "Cr")}</td> */}
                 <td className="px-6 py-4 text-right  font-semibold">{formatWithDrCr(report.nonOperatingIncome, "Cr")}</td>
               </tr>
@@ -211,6 +227,7 @@ const ProfitLossReport = () => {
           <p className="text-zinc-500 font-medium text-lg">No data for the selected timeframe.</p>
         </div>
       )}
+      <GeneralLedgerModal ledger={selectedLedger} fromDate={queryParams.fromDate} toDate={queryParams.toDate} onClose={() => setSelectedLedger(null)} />
     </div>
   );
 };

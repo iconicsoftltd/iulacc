@@ -9,6 +9,7 @@ export const useVoucherPrint = () => {
     }
 
     const { logo, address, email, phone, website } = voucherData?.config || {};
+    const title = voucherData?.voucherTitle || "Receipt Voucher";
 
     // Build table rows HTML
     const rowsHTML = voucherData?.rows
@@ -65,7 +66,7 @@ export const useVoucherPrint = () => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Receipt Voucher</title>
+          <title>${title}</title>
           <script src="https://cdn.tailwindcss.com"></script>
           <style>
             * { -webkit-print-color-adjust: exact; print-color-adjust: exact; color-adjust: exact; }
@@ -105,7 +106,7 @@ export const useVoucherPrint = () => {
               <div class="website-line">${website || ""}</div>
             </div>
 
-            <h2 class="main-title">Receipt Voucher</h2>
+            <h2 class="main-title">${title}</h2>
 
             <div class="voucher-info">
               <div>Voucher No: ${voucherData.voucherNo}</div>

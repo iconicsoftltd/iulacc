@@ -12,6 +12,7 @@ import { selectCurrentCurrency } from "@/components/store/store";
 import Heading from "@/components/typography/Heading";
 import { Button } from "@/components/ui/button";
 import ReportDateSelector from "@/utils/helper/ReportDateSelector";
+import GeneralLedgerModal, { SelectedLedger } from "@/components/common/GeneralLedgerModal";
 import { formatAccounting, formatWithDrCr } from "@/utils/helper/accountingFormat";
 // Enhanced helper to show "115,000.00 Dr" or "500,000.00 Cr"
 
@@ -29,6 +30,7 @@ const OwnerSecurityReport = () => {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [shouldFetch, setShouldFetch] = useState(false);
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
+  const [selectedLedger, setSelectedLedger] = useState<SelectedLedger | null>(null);
 
   const currentCurrency = useSelector(selectCurrentCurrency);
 
@@ -142,7 +144,7 @@ const OwnerSecurityReport = () => {
 
                 {report.addEquity?.map((item, i) => (
                   <tr key={`add-equity-${i}`} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="px-6 py-3 text-zinc-700 font-medium">{item.account}</td>
+                    <td className="px-6 py-3 text-zinc-700 font-medium">{item.particularId ? <button type="button" onClick={() => setSelectedLedger({ particularId: item.particularId, accountName: item.account })} className="text-left text-sky-700 underline-offset-4 hover:underline focus:underline">{item.account}</button> : item.account}</td>
                     <td className="px-6 py-3 text-zinc-500 italic">{item.classification}</td>
                     <td className="px-6 py-3 text-right font-semibold text-emerald-600">
                       {formatWithDrCr(item.amount, "Cr")}
@@ -174,7 +176,7 @@ const OwnerSecurityReport = () => {
 
                 {report.lessEquity?.map((item, i) => (
                   <tr key={`less-equity-${i}`} className="hover:bg-zinc-50/50 transition-colors">
-                    <td className="px-6 py-3 text-zinc-700 font-medium">{item.account}</td>
+                    <td className="px-6 py-3 text-zinc-700 font-medium">{item.particularId ? <button type="button" onClick={() => setSelectedLedger({ particularId: item.particularId, accountName: item.account })} className="text-left text-sky-700 underline-offset-4 hover:underline focus:underline">{item.account}</button> : item.account}</td>
                     <td className="px-6 py-3 text-zinc-500 italic">{item.classification}</td>
                     <td className="px-6 py-3 text-right font-semibold text-rose-600">
                       {formatWithDrCr(item.amount, "Dr")}
@@ -214,6 +216,7 @@ const OwnerSecurityReport = () => {
           <p className="text-zinc-500 font-medium">Generating Owner's Equity Report...</p>
         </div>
       )}
+      <GeneralLedgerModal ledger={selectedLedger} fromDate={queryParams.fromDate} toDate={queryParams.toDate} onClose={() => setSelectedLedger(null)} />
     </div>
   );
 };

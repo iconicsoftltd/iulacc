@@ -29,6 +29,7 @@ export type CashFlowData = {
 
 type Props = {
   data: CashFlowData;
+  onAccountClick?: (item: LedgerItem) => void;
 };
 
 const format = (num: number) =>
@@ -38,7 +39,7 @@ const format = (num: number) =>
       ? `(${Math.abs(num).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`
       : num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export default function CashSummaryTable({ data }: Props) {
+export default function CashSummaryTable({ data, onAccountClick }: Props) {
   if (!data) return null;
   const debitRows = data.inflows ?? [];
   const creditRows = data.outflows ?? [];
@@ -65,7 +66,13 @@ export default function CashSummaryTable({ data }: Props) {
           {debitRows.map((item, index) => (
             <TableRow key={`debit-${item.particularId ?? item.accountDescription}-${index}`} className="hover:bg-zinc-50/30 transition-colors">
               <TableCell className="text-zinc-500 font-mono">{index + 1}</TableCell>
-              <TableCell className="font-medium text-zinc-700">{item.accountDescription}</TableCell>
+              <TableCell className="font-medium text-zinc-700">
+                {item.particularId ? (
+                  <button type="button" onClick={() => onAccountClick?.(item)} className="text-left text-sky-700 underline-offset-4 hover:underline focus:outline-none focus:underline">
+                    {item.accountDescription}
+                  </button>
+                ) : item.accountDescription}
+              </TableCell>
               <TableCell className="text-zinc-400 font-mono text-xs">{item.ledgerNo}</TableCell>
               <TableCell className="text-right font-semibold text-zinc-900">{format(item.debit)}</TableCell>
               <TableCell className="text-right text-zinc-400">{format(item.credit)}</TableCell>
@@ -80,7 +87,13 @@ export default function CashSummaryTable({ data }: Props) {
           {creditRows.map((item, index) => (
             <TableRow key={`credit-${item.particularId ?? item.accountDescription}-${index}`} className="hover:bg-zinc-50/30 transition-colors">
               <TableCell className="text-zinc-500 font-mono">{debitRows.length + index + 1}</TableCell>
-              <TableCell className="font-medium text-zinc-700">{item.accountDescription}</TableCell>
+              <TableCell className="font-medium text-zinc-700">
+                {item.particularId ? (
+                  <button type="button" onClick={() => onAccountClick?.(item)} className="text-left text-sky-700 underline-offset-4 hover:underline focus:outline-none focus:underline">
+                    {item.accountDescription}
+                  </button>
+                ) : item.accountDescription}
+              </TableCell>
               <TableCell className="text-zinc-400 font-mono text-xs">{item.ledgerNo}</TableCell>
               <TableCell className="text-right text-zinc-400">{format(item.debit)}</TableCell>
               <TableCell className="text-right font-semibold">{format(item.credit)}</TableCell>

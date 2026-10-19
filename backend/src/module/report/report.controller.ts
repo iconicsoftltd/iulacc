@@ -239,6 +239,8 @@ export const incomeReport = async (
       include: {
         particular: {
           select: {
+            id: true,
+            accountType: true,
             ledger: {
               select: {
                 ledgerType: true,
@@ -255,6 +257,7 @@ export const incomeReport = async (
     let totalCogs = 0; // ✅
 
     interface Item {
+      particularId: number;
       account: string;
       classification: string;
       amount: number;
@@ -272,23 +275,23 @@ export const incomeReport = async (
       if (account === "Income") {
         const amount = entry.type === "Credit" ? entryAmount : -entryAmount;
         totalRevenue += amount;
-        const existing = revenue.find((r) => r.account === ledgerType);
+        const existing = revenue.find((r) => r.particularId === entry.particular.id);
         if (existing) existing.amount += amount;
-        else revenue.push({ account: ledgerType, classification: "Income", amount });
+        else revenue.push({ particularId: entry.particular.id, account: entry.particular.accountType || ledgerType, classification: "Income", amount });
 
       } else if (ledgerType === "COGS") { // ✅ account check এর আগে COGS check
         const amount = entry.type === "Debit" ? entry.amount : -entry.amount;
         totalCogs += amount;
-        const existing = cogs.find((c) => c.account === ledgerType);
+        const existing = cogs.find((c) => c.particularId === entry.particular.id);
         if (existing) existing.amount += amount;
-        else cogs.push({ account: ledgerType, classification: "COGS", amount });
+        else cogs.push({ particularId: entry.particular.id, account: entry.particular.accountType || ledgerType, classification: "COGS", amount });
 
       } else if (account === "Expense") {
         const amount = entry.type === "Debit" ? entryAmount : -entryAmount;
         totalExpense += amount;
-        const existing = expense.find((e) => e.account === ledgerType);
+        const existing = expense.find((e) => e.particularId === entry.particular.id);
         if (existing) existing.amount += amount;
-        else expense.push({ account: ledgerType, classification: "Expense", amount });
+        else expense.push({ particularId: entry.particular.id, account: entry.particular.accountType || ledgerType, classification: "Expense", amount });
       }
     }
 
@@ -384,6 +387,8 @@ export const ownerSecurityReport = async (
       include: {
         particular: {
           select: {
+            id: true,
+            accountType: true,
             ledger: {
               select: {
                 ledgerType: true,
@@ -399,6 +404,7 @@ export const ownerSecurityReport = async (
     let totalExpense = 0;
     let totalEquity = 0;
     interface report {
+      particularId?: number;
       account: string;
       classification: string;
       amount: number;
@@ -417,22 +423,24 @@ export const ownerSecurityReport = async (
         const entryAmount = Number(entry.amount) || 0;
         const amount = entry.type === "Credit" ? entryAmount : -entryAmount;
         totalRevenue += amount;
-        const existing = revenue.find((r) => r.account === ledgerType);
+        const existing = revenue.find((r) => r.particularId === entry.particular.id);
         if (existing) existing.amount += amount;
         else
           revenue.push({
-            account: ledgerType,
+            particularId: entry.particular.id,
+            account: entry.particular.accountType || ledgerType,
             classification: "Income",
             amount,
           });
       } else if (account === "Expense") {
         const amount = entry.type === "Debit" ? entry.amount : -entry.amount;
         totalExpense += amount;
-        const existing = expense.find((e) => e.account === ledgerType);
+        const existing = expense.find((e) => e.particularId === entry.particular.id);
         if (existing) existing.amount += amount;
         else
           expense.push({
-            account: ledgerType,
+            particularId: entry.particular.id,
+            account: entry.particular.accountType || ledgerType,
             classification: "Expense",
             amount,
           });
@@ -440,18 +448,15 @@ export const ownerSecurityReport = async (
         const entryAmount = Number(entry.amount) || 0;
         const amount = entry.type === "Credit" ? entryAmount : -entryAmount;
         totalEquity += amount;
-        if (entry.type === "Credit")
-          addEquity.push({
-            account: ledgerType,
-            classification: "Capital Investment",
-            amount,
-          });
-        else
-          lessEquity.push({
-            account: ledgerType,
-            classification: "Owner's Withdrawal",
-            amount: -amount,
-          });
+        const target = entry.type === "Credit" ? addEquity : lessEquity;
+        const existing = target.find((item) => item.particularId === entry.particular.id);
+        if (existing) existing.amount += Math.abs(amount);
+        else target.push({
+          particularId: entry.particular.id,
+          account: entry.particular.accountType || ledgerType,
+          classification: entry.type === "Credit" ? "Capital Investment" : "Owner's Withdrawal",
+          amount: Math.abs(amount),
+        });
       }
     }
 
@@ -559,6 +564,7 @@ export const balanceSheets = async (
       include: {
         particular: {
           select: {
+            id: true,
             accountType: true,
             ledger: {
               select: {
@@ -579,6 +585,7 @@ export const balanceSheets = async (
     let totalLiabilities = 0;
 
     interface report {
+      particularId?: number;
       account: string;
       classification: string;
       amount: number;
@@ -601,6 +608,7 @@ export const balanceSheets = async (
       classification: string,
       groupName: string,
       amount: number,
+      particularId?: number,
     ) => {
       let group = assets.find((item) => item.groupName === groupName);
       if (!group) {
@@ -608,9 +616,9 @@ export const balanceSheets = async (
         assets.push(group);
       }
       group.totalAmount += amount;
-      const existing = group.account.find((item) => item.account === account);
+      const existing = group.account.find((item) => item.particularId === particularId);
       if (existing) existing.amount += amount;
-      else group.account.push({ account, classification, amount });
+      else group.account.push({ particularId, account, classification, amount });
       totalAssets += amount;
     };
 
@@ -639,7 +647,7 @@ export const balanceSheets = async (
         else lessEquity.push({ account: ledgerType, classification: "Owner's Withdrawal", amount: -amount });
       } else if (account === "Assets") {
         const amount = entry.type === "Debit" ? entry.amount : -entry.amount;
-        addAssetAmount(ledgerType, "Assets", entry.particular.ledger.group.accountType, amount);
+        addAssetAmount(entry.particular.accountType || ledgerType, "Assets", entry.particular.ledger.group.accountType, amount, entry.particular.id);
       } else if (account === "Liability") {
         const amount = entry.type === "Credit" ? entry.amount : -entry.amount;
         totalLiabilities += amount;
@@ -650,9 +658,9 @@ export const balanceSheets = async (
           liabilities.push(group);
         }
         group.totalAmount += amount;
-        const existing = group.account.find((item) => item.account === ledgerType);
+        const existing = group.account.find((item) => item.particularId === entry.particular.id);
         if (existing) existing.amount += amount;
-        else group.account.push({ account: ledgerType, classification: "Liabilities", amount });
+        else group.account.push({ particularId: entry.particular.id, account: entry.particular.accountType || ledgerType, classification: "Liabilities", amount });
       }
     }
 
@@ -663,6 +671,7 @@ export const balanceSheets = async (
         "Assets",
         cash.ledger?.group?.accountType || "Current Assets",
         cashOpeningBalance,
+        cash.id,
       );
     }
 
@@ -995,12 +1004,15 @@ export async function getVoucherLedgerReport(params: VoucherLedgerParams) {
 export interface GeneralLedgerParams {
   fromDate: string;
   toDate: string;
-  particularId: number;
+  particularId: number | number[];
   branchId: number;
 }
 
 export interface LedgerRow {
   date: string;
+  invoice: string;
+  voucherId?: number;
+  voucherType?: string;
   details: string;
   narration: string | null;
   debit: number;
@@ -1009,28 +1021,57 @@ export interface LedgerRow {
 
 export async function getGeneralLedgerReport(params: GeneralLedgerParams) {
   const { fromDate, toDate, particularId, branchId } = params;
+  const particularIds = Array.isArray(particularId) ? particularId : [particularId];
 
   // 1️⃣ Fetch Opening Balance
-  const particular = await prisma.particular.findFirst({
-    where: { id: particularId, branchId },
+  const particulars = await prisma.particular.findMany({
+    where: { id: { in: particularIds }, branchId },
     select: {
       openingBalance: true,
       openingBalanceType: true,
     },
   });
 
+  const configuredOpeningBalance = particulars.reduce(
+    (balance, item) =>
+      balance +
+      (item.openingBalanceType === "Debit"
+        ? item.openingBalance
+        : -item.openingBalance),
+    0,
+  );
+
+  // Carry every transaction before the selected period into the opening row.
+  // This keeps the drill-down ledger aligned with the fiscal-year Ledger Report.
+  const previousEntries = await prisma.particularOnVoucher.findMany({
+    where: {
+      particularId: { in: particularIds },
+      voucher: {
+        branchId,
+        isArchived: false,
+        date: { lt: new Date(fromDate) },
+      },
+    },
+    select: { type: true, amount: true },
+  });
+
+  const openingBalance = previousEntries.reduce(
+    (balance, entry) =>
+      balance + (entry.type === "Debit" ? entry.amount : -entry.amount),
+    configuredOpeningBalance,
+  );
+  const openingDebit = openingBalance > 0 ? openingBalance : 0;
+  const openingCredit = openingBalance < 0 ? Math.abs(openingBalance) : 0;
+
   const openingBalanceRow: LedgerRow = {
     date: fromDate,
+    invoice: "-",
     details: "",
     narration: "Opening Balance",
     debit:
-      particular?.openingBalanceType === "Debit"
-        ? particular.openingBalance
-        : 0,
+      openingDebit,
     credit:
-      particular?.openingBalanceType === "Credit"
-        ? particular.openingBalance
-        : 0,
+      openingCredit,
   };
 
   // 2️⃣ Fetch All Ledger Transactions
@@ -1044,13 +1085,13 @@ export async function getGeneralLedgerReport(params: GeneralLedgerParams) {
       },
       particulars: {
         some: {
-          particularId,
+          particularId: { in: particularIds },
         },
       },
     },
     include: {
       particulars: {
-        where: { particularId },
+        where: { particularId: { in: particularIds } },
         select: {
           amount: true,
           type: true, // Debit | Credit
@@ -1071,6 +1112,9 @@ export async function getGeneralLedgerReport(params: GeneralLedgerParams) {
 
     return {
       date: v.date.toISOString().split("T")[0],
+      invoice: v.voucherNo,
+      voucherId: v.id,
+      voucherType: v.type,
       details: voucherTypeName(v.type), // readable type
       narration: v.narration ?? "",
       debit,
@@ -1302,6 +1346,13 @@ export interface ProfitLossReport {
   earningBeforeTax: number;
   taxAmount: number;
   earningAfterTax: number;
+  drilldownIds: {
+    totalSales: number[];
+    purchaseAmount: number[];
+    adminExpenses: number[];
+    sellingExpenses: number[];
+    nonOperatingIncome: number[];
+  };
 }
 
 export async function getProfitLossReport2({
@@ -1405,6 +1456,13 @@ export async function getProfitLossReport2({
     earningBeforeTax,
     taxAmount,
     earningAfterTax,
+    drilldownIds: {
+      totalSales: [],
+      purchaseAmount: [],
+      adminExpenses: [],
+      sellingExpenses: [],
+      nonOperatingIncome: [],
+    },
   };
 }
 
@@ -1473,6 +1531,13 @@ export async function getProfitLossReport({
   let adminExpenses = 0;
   let sellingExpenses = 0;
   let nonOperatingIncome = 0;
+  const drilldownIds = {
+    totalSales: new Set<number>(),
+    purchaseAmount: new Set<number>(),
+    adminExpenses: new Set<number>(),
+    sellingExpenses: new Set<number>(),
+    nonOperatingIncome: new Set<number>(),
+  };
 
   // ✅ Step 4: Loop
   for (const row of data) {
@@ -1486,6 +1551,7 @@ export async function getProfitLossReport({
     // 🔥 Income
     if (account === "Income") {
       totalSales += row.type === "Credit" ? amount : -amount;
+      drilldownIds.totalSales.add(row.particularId);
     }
 
     // Expenses are classified by their group instead of being treated as sales.
@@ -1499,6 +1565,7 @@ export async function getProfitLossReport({
 
       if (isDirectExpense) {
         purchaseAmount += expenseAmount;
+        drilldownIds.purchaseAmount.add(row.particularId);
       } else if (
         category.includes("selling") ||
         category.includes("distribution") ||
@@ -1507,12 +1574,15 @@ export async function getProfitLossReport({
         category.includes("ads")
       ) {
         sellingExpenses += expenseAmount;
+        drilldownIds.sellingExpenses.add(row.particularId);
       } else {
         adminExpenses += expenseAmount;
+        drilldownIds.adminExpenses.add(row.particularId);
       }
     }    // 🔥 Other income
     else if (account === "Other_Accounts") {
       nonOperatingIncome += row.type === "Credit" ? amount : -amount;
+      drilldownIds.nonOperatingIncome.add(row.particularId);
     }
 
     // ❌ Ignore Assets, Liability, Equity
@@ -1541,6 +1611,13 @@ export async function getProfitLossReport({
     earningBeforeTax,
     taxAmount,
     earningAfterTax,
+    drilldownIds: {
+      totalSales: [...drilldownIds.totalSales],
+      purchaseAmount: [...drilldownIds.purchaseAmount],
+      adminExpenses: [...drilldownIds.adminExpenses],
+      sellingExpenses: [...drilldownIds.sellingExpenses],
+      nonOperatingIncome: [...drilldownIds.nonOperatingIncome],
+    },
   };
 }
 export const voucherLedger = async (
@@ -1592,7 +1669,7 @@ export const generalLedger = async (
     const result = await getGeneralLedgerReport({
       fromDate: String(fromDate),
       toDate: String(toDate),
-      particularId: Number(particularId),
+      particularId: String(particularId).split(",").map(Number).filter(Boolean),
       branchId: Number(branchId),
     });
 
@@ -2751,6 +2828,7 @@ export const TrailBalanceReport = async (req: Request, res: Response) => {
 
 type CashFlowRow = {
   sl: number;
+  particularId?: number;
   accountDescription: string;
   ledgerNo?: string;
   debit: number;
@@ -2818,6 +2896,8 @@ export const CashFlowReport = async (req: Request, res: Response) => {
     });
 
     type AccountBalance = {
+      particularId: number;
+      accountName: string;
       debit: number;
       credit: number;
       ledgerNo: string;
@@ -2828,9 +2908,12 @@ export const CashFlowReport = async (req: Request, res: Response) => {
     for (const entry of entries) {
       const accountName = entry.particular.accountType || "Unnamed Account";
       const isCash = cashAccountIds.includes(entry.particularId);
+      const accountKey = String(entry.particularId);
 
-      if (!accountMap[accountName]) {
-        accountMap[accountName] = {
+      if (!accountMap[accountKey]) {
+        accountMap[accountKey] = {
+          particularId: entry.particularId,
+          accountName,
           debit: 0,
           credit: 0,
           ledgerNo: entry.particular.ledger?.code ?? "",
@@ -2838,16 +2921,19 @@ export const CashFlowReport = async (req: Request, res: Response) => {
         };
       }
 
-      accountMap[accountName].isCash ||= isCash;
-      if (entry.type === "Debit") accountMap[accountName].debit += entry.amount;
-      else accountMap[accountName].credit += entry.amount;
+      accountMap[accountKey].isCash ||= isCash;
+      if (entry.type === "Debit") accountMap[accountKey].debit += entry.amount;
+      else accountMap[accountKey].credit += entry.amount;
     }
 
     // Keep a carried-forward Cash balance visible even when there is no Cash transaction in this period.
     if (cashOpeningBalance !== 0 && cashAccountIds.length) {
       const cashAccountName = cashAccounts[0].accountType || "Cash";
-      if (!accountMap[cashAccountName]) {
-        accountMap[cashAccountName] = {
+      const cashAccountKey = String(cashAccounts[0].id);
+      if (!accountMap[cashAccountKey]) {
+        accountMap[cashAccountKey] = {
+          particularId: cashAccounts[0].id,
+          accountName: cashAccountName,
           debit: 0,
           credit: 0,
           ledgerNo: cashAccounts[0].ledger?.code ?? "",
@@ -2861,13 +2947,14 @@ export const CashFlowReport = async (req: Request, res: Response) => {
     const creditBalances: CashFlowRow[] = [];
     let sl = 1;
 
-    for (const [account, value] of Object.entries(accountMap)) {
+    for (const value of Object.values(accountMap)) {
       const opening = value.isCash ? cashOpeningBalance : 0;
       const closing = opening + value.debit - value.credit;
       if (closing > 0) {
         debitBalances.push({
           sl: sl++,
-          accountDescription: account,
+          particularId: value.particularId,
+          accountDescription: value.accountName,
           ledgerNo: value.ledgerNo,
           debit: closing,
           credit: 0,
@@ -2875,7 +2962,8 @@ export const CashFlowReport = async (req: Request, res: Response) => {
       } else if (closing < 0) {
         creditBalances.push({
           sl: sl++,
-          accountDescription: account,
+          particularId: value.particularId,
+          accountDescription: value.accountName,
           ledgerNo: value.ledgerNo,
           debit: 0,
           credit: Math.abs(closing),

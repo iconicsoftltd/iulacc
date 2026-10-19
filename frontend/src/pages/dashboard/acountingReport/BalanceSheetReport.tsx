@@ -12,6 +12,7 @@ import { selectCurrentCurrency } from "@/components/store/store";
 import Heading from "@/components/typography/Heading";
 import { Button } from "@/components/ui/button";
 import ReportDateSelector from "@/utils/helper/ReportDateSelector";
+import GeneralLedgerModal, { SelectedLedger } from "@/components/common/GeneralLedgerModal";
 // Import the common helper
 import { formatWithDrCr } from "@/utils/helper/accountingFormat";
 
@@ -27,6 +28,7 @@ const BalanceSheetReport = () => {
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [shouldFetch, setShouldFetch] = useState(false);
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
+  const [selectedLedger, setSelectedLedger] = useState<SelectedLedger | null>(null);
 
   const currentCurrency = useSelector(selectCurrentCurrency);
 
@@ -139,7 +141,7 @@ const BalanceSheetReport = () => {
                     </tr>
                     {group.account.map((item, j) => (
                       <tr key={`asset-${j}`} className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-6 py-3 text-zinc-700 font-medium">{item.account}</td>
+                        <td className="px-6 py-3 text-zinc-700 font-medium">{item.particularId ? <button type="button" onClick={() => setSelectedLedger({ particularId: item.particularId, accountName: item.account })} className="text-left text-sky-700 underline-offset-4 hover:underline focus:underline">{item.account}</button> : item.account}</td>
                         <td className="px-6 py-3 text-zinc-500 italic">{item.classification}</td>
                         <td className="px-6 py-3 text-right font-semibold text-zinc-600">
                           {formatWithDrCr(item.amount, item.amount >= 0 ? "Dr" : "Cr")}
@@ -177,7 +179,7 @@ const BalanceSheetReport = () => {
                     </tr>
                     {group.account.map((item, j) => (
                       <tr key={`liability-${j}`} className="hover:bg-zinc-50/50 transition-colors">
-                        <td className="px-6 py-3 text-zinc-700 font-medium">{item.account}</td>
+                        <td className="px-6 py-3 text-zinc-700 font-medium">{item.particularId ? <button type="button" onClick={() => setSelectedLedger({ particularId: item.particularId, accountName: item.account })} className="text-left text-sky-700 underline-offset-4 hover:underline focus:underline">{item.account}</button> : item.account}</td>
                         <td className="px-6 py-3 text-zinc-500 italic">{item.classification}</td>
                         <td className="px-6 py-3 text-right font-semibold text-zinc-600">
                           {formatWithDrCr(item.amount, "Cr")}
@@ -230,6 +232,7 @@ const BalanceSheetReport = () => {
           <p className="text-zinc-500 font-medium">Loading Balance Sheet...</p>
         </div>
       )}
+      <GeneralLedgerModal ledger={selectedLedger} fromDate={queryParams.fromDate} toDate={queryParams.toDate} onClose={() => setSelectedLedger(null)} />
     </div>
   );
 };

@@ -27,9 +27,11 @@ export default function AdminLayout() {
 
         {/* Page Content */}
         <main
-          className="min-h-0 min-w-0 flex-1 mt-[64px] h-[calc(100vh-64px)] bg-slate-50 p-2 transition-all duration-300 lg:ml-[280px] md:px-4 md:pb-6 md:pt-4 overflow-x-hidden overflow-y-auto"
+          className="min-h-0 min-w-0 flex-1 mt-[64px] h-[calc(100vh-64px)] bg-slate-50 transition-all duration-300 lg:ml-[280px] overflow-x-hidden overflow-y-auto"
         >
-          <Outlet />
+          <div className="min-h-full p-2 md:px-4 md:pb-6 md:pt-4">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

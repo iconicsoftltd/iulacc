@@ -101,10 +101,9 @@ const ReceiptVoucherList: React.FC = () => {
 
     return matchesSearch && matchesFromDate && matchesToDate;
   });
-  const hasDateRangeFilter = Boolean(fromDate || toDate);
-  const totalItems = hasDateRangeFilter
-    ? filteredData.length
-    : voucherData?.meta?.total || filteredData.length;
+  // Date range is already applied by the paginated API. Keep its total so
+  // filtered results can still move to the next page.
+  const totalItems = voucherData?.meta?.total ?? filteredData.length;
   const paginatedData = filteredData;
 
   const handleSelectAll = (checked: boolean) => {

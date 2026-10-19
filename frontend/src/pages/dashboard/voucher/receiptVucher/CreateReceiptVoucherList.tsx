@@ -333,7 +333,7 @@ const CreateReceiptVoucherList = () => {
                           }
                         }}
                         disabled={entryType !== "Debit"}
-                        value={entryType === "Debit" ? field.value : ""}
+                        value={entryType === "Debit" ? field.value || "" : ""}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value === "" ? 0 : Number(e.target.value),
@@ -360,7 +360,7 @@ const CreateReceiptVoucherList = () => {
                           }
                         }}
                         disabled={entryType !== "Credit"}
-                        value={entryType === "Credit" ? field.value : ""}
+                        value={entryType === "Credit" ? field.value || "" : ""}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value === "" ? 0 : Number(e.target.value),

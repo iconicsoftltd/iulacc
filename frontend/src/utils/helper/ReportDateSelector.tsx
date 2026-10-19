@@ -1,5 +1,7 @@
 import dayjs from "dayjs";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
@@ -51,6 +53,7 @@ export default function ReportDateSelector({
   showParticular = false, // NEW (optional)
   onSearch,
 }: ReportDateSelectorProps) {
+  const [particularSearch, setParticularSearch] = useState("");
   // 🔥 handle search click
   const handleSearch = () => {
     const payload = {
@@ -69,6 +72,20 @@ export default function ReportDateSelector({
     size: 3000,
   });
   const fiscalYearLabel = (year: number) => `FY ${year}-${year + 1} (Jul-Jun)`;
+  const filteredParticulars = (particularData?.data ?? []).filter((item) => {
+    const query = particularSearch.trim().toLowerCase();
+    if (!query) return true;
+
+    return [
+      item.accountType,
+      item?.ledger?.ledgerType,
+      item?.ledger?.group?.account,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(query);
+  });
 
   return (
     <>
@@ -156,6 +173,7 @@ export default function ReportDateSelector({
       {showParticular && (
         <Select
           value={particular?.id ? String(particular.id) : "all"}
+          onOpenChange={(open) => !open && setParticularSearch("")}
           onValueChange={(value) => {
             if (!setParticular) return;
             if (value === "all") {
@@ -172,12 +190,26 @@ export default function ReportDateSelector({
             <SelectValue placeholder="Select Particular" />
           </SelectTrigger>
           <SelectContent>
+            <div className="sticky top-0 z-10 bg-white p-2">
+              <Input
+                autoFocus
+                placeholder="Search account..."
+                value={particularSearch}
+                onChange={(event) => setParticularSearch(event.target.value)}
+                onKeyDown={(event) => event.stopPropagation()}
+              />
+            </div>
             <SelectItem value="all">All</SelectItem>
-            {particularData?.data.map((item) => (
+            {filteredParticulars.map((item) => (
               <SelectItem key={item.id} value={String(item.id)}>
                 {item.accountType} ({item?.ledger?.ledgerType})
               </SelectItem>
             ))}
+            {!filteredParticulars.length && (
+              <div className="px-3 py-4 text-center text-sm text-zinc-500">
+                No account found
+              </div>
+            )}
           </SelectContent>
         </Select>
       )}
