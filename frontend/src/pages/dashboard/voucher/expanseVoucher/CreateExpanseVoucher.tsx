@@ -30,6 +30,7 @@ import { generateVoucherNo } from "@/utils/helper/randomValueGenerator";
 import {
   focusNextVoucherAmount,
   focusNextVoucherParticular,
+  focusVoucherParticularByIndex,
 } from "@/utils/helper/voucherKeyboardFocus";
 
 import HomeLoader from "@/components/loader/HomeLoader";
@@ -71,17 +72,20 @@ const isCOGS = (item: any) => {
 };
 
 const isCashOrBank = (item: any) => {
-  const accountType = String(item?.accountType || item?.name || "")
-    .trim()
-    .toLowerCase();
+  // const accountType = String(item?.accountType || item?.name || "")
+  //   .trim()
+  //   .toLowerCase();
   const ledgerType = String(item?.ledger?.ledgerType || "")
     .trim()
     .toLowerCase();
 
-  return ["cash", "bank"].includes(accountType) && ["cash", "bank"].includes(ledgerType);
+  return ["cash", "bank", "bkash", "nagad"].includes(ledgerType);
 };
 
-const uniqueCashBankOptions = (items: any[] = []) => {
+const isExcludedExpenseDebit = (item: any) => {
+  const ledgerName = String(item?.ledger?.ledgerType || "").trim().toLowerCase();
+  return ["sale", "obtaining short term loan", "obtaining long term loan", "cogs"].includes(ledgerName);
+};const uniqueCashBankOptions = (items: any[] = []) => {
   const optionMap = new Map<string, any>();
 
   items.filter(isCashOrBank).forEach((item) => {
@@ -92,7 +96,7 @@ const uniqueCashBankOptions = (items: any[] = []) => {
     if (!optionMap.has(key)) optionMap.set(key, item);
   });
 
-  return Array.from(optionMap.values());
+  return Array.from(optionMap.values()).sort((a, b) => { const order: Record<string, number> = { cash: 0, bank: 1, bkash: 2, nagad: 3 }; const aType = String(a?.ledger?.ledgerType || "").trim().toLowerCase(); const bType = String(b?.ledger?.ledgerType || "").trim().toLowerCase(); return (order[aType] ?? 99) - (order[bType] ?? 99); });
 };
 
 const CreateExpanseVoucher = () => {
@@ -139,7 +143,7 @@ const CreateExpanseVoucher = () => {
     allParticulars?.data?.filter(isAllowedParticular) || [];
 
   // Expense rule: Debit side = everything except COGS, Credit side = only Cash/Bank
-  const debitOptions = particularOptions.filter((item: any) => !isCOGS(item));
+  const debitOptions = particularOptions.filter((item: any) => !isCOGS(item) && !isExcludedExpenseDebit(item) && !isCashOrBank(item));
   const creditOptions = uniqueCashBankOptions(accounts?.data || []);
 
   const filterParticularOptions = (options: any[] = []) => {
@@ -290,7 +294,15 @@ const CreateExpanseVoucher = () => {
                   name={`entries.${index}.type`}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="border border-gray-400">
+                      <SelectTrigger
+                        className="border border-gray-400"
+                        onKeyDown={(event) => {
+                          if (event.key === "Tab" && !event.shiftKey) {
+                            event.preventDefault();
+                            focusVoucherParticularByIndex(index);
+                          }
+                        }}
+                      >
                         <SelectValue placeholder="Select one" />
                       </SelectTrigger>
                       <SelectContent>
@@ -332,6 +344,16 @@ const CreateExpanseVoucher = () => {
                       <SelectTrigger
                         className="border border-gray-400"
                         data-voucher-particular-index={index}
+                        onKeyDown={(event) => {
+                          if (
+                            event.key.length === 1 &&
+                            !event.ctrlKey &&
+                            !event.metaKey &&
+                            !event.altKey
+                          ) {
+                            event.preventDefault();
+                          }
+                        }}
                       >
                         <SelectValue placeholder={"Select one"} />
                       </SelectTrigger>
@@ -342,7 +364,21 @@ const CreateExpanseVoucher = () => {
                             placeholder="Search..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.currentTarget.dataset.navUsed) {
+                                e.preventDefault();
+                                const firstItem = e.currentTarget.closest("[role=\"listbox\"]")?.querySelector<HTMLElement>("[role=\"option\"]:not([data-disabled])");
+                                firstItem?.click();
+                                return;
+                              }
+                              if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                                e.currentTarget.dataset.navUsed = "true";
+                                return;
+                              }
+                              if (e.key !== "Escape") {
+                                e.stopPropagation();
+                              }
+                            }}
                           />
                         </div>
                         {filterParticularOptions(options).map((item: any) => (

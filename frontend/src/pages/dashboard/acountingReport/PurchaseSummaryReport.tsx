@@ -36,6 +36,7 @@ const PurchaseSummaryReport = () => {
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
 
   const currentCurrency = useSelector(selectCurrentCurrency);
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
   const { data: report, isLoading } = useGetPurchaseSummaryReportQuery(queryParams);
 
   const columns: ColumnDef<PurchaseSummaryRow>[] = [
@@ -53,13 +54,13 @@ const PurchaseSummaryReport = () => {
       accessorKey: "valueExcl",
       header: "Value (Excl.)",
       cell: ({ row }) => (row.original.valueExcl ?? 0).toFixed(2),
-      footer: () => report?.data?.totals?.totalValueExcl?.toFixed(2),
+      footer: () => `${currencyLabel || "৳"} ${report?.data?.totals?.totalValueExcl?.toFixed(2)}`,
     },
     {
       accessorKey: "vatPaid",
       header: "VAT Paid",
       cell: ({ row }) => (row.original.vatPaid ?? 0).toFixed(2),
-      footer: () => report?.data?.totals?.totalVatPaid?.toFixed(2),
+      footer: () => `${currencyLabel || "৳"} ${report?.data?.totals?.totalVatPaid?.toFixed(2)}`,
     },
     {
       accessorKey: "reclaimable",

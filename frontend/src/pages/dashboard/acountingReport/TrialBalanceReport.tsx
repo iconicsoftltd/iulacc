@@ -24,6 +24,7 @@ const TrialBalanceReport = () => {
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
 
   const currentCurrency = useSelector(selectCurrentCurrency);
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
 
   /* ===================== Search Handler ===================== */
   const handleSearch = ({ reportType, fromDate, toDate, month, year }) => {
@@ -136,12 +137,12 @@ const TrialBalanceReport = () => {
                 </th>
               </tr>
               <tr>
-                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Debit ({currentCurrency?.name})</th>
-                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Credit ({currentCurrency?.name})</th>
-                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Debit ({currentCurrency?.name})</th>
-                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Credit ({currentCurrency?.name})</th>
-                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Debit ({currentCurrency?.name})</th>
-                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Credit ({currentCurrency?.name})</th>
+                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Debit ({currencyLabel})</th>
+                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Credit ({currencyLabel})</th>
+                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Debit ({currencyLabel})</th>
+                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Credit ({currencyLabel})</th>
+                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Debit ({currencyLabel})</th>
+                <th className="sticky top-12 z-40 bg-primary border px-2 py-2 text-right">Credit ({currencyLabel})</th>
               </tr>
             </thead>
 
@@ -261,22 +262,22 @@ const TrialBalanceReport = () => {
                         Total Amount
                       </td>
                       <td className="border px-2 py-2 text-right">
-                        {groupTotal.openingDebit.toLocaleString()}
+                        {currencyLabel} {groupTotal.openingDebit.toLocaleString()}
                       </td>
                       <td className="border px-2 py-2 text-right">
-                        {groupTotal.openingCredit.toLocaleString()}
+                        {currencyLabel} {groupTotal.openingCredit.toLocaleString()}
                       </td>
                       <td className="border px-2 py-2 text-right">
-                        {groupTotal.trxDebit.toLocaleString()}
+                        {currencyLabel} {groupTotal.trxDebit.toLocaleString()}
                       </td>
                       <td className="border px-2 py-2 text-right">
-                        {groupTotal.trxCredit.toLocaleString()}
+                        {currencyLabel} {groupTotal.trxCredit.toLocaleString()}
                       </td>
                       <td className="border px-2 py-2 text-right">
-                        {groupTotal.closingDebit.toLocaleString()}
+                        {currencyLabel} {groupTotal.closingDebit.toLocaleString()}
                       </td>
                       <td className="border px-2 py-2 text-right">
-                        {groupTotal.closingCredit.toLocaleString()}
+                        {currencyLabel} {groupTotal.closingCredit.toLocaleString()}
                       </td>
                     </tr>
                   </>
@@ -289,22 +290,22 @@ const TrialBalanceReport = () => {
                   Grand Total Amount
                 </td>
                 <td className="border px-2 py-3 text-right">
-                  {grandTotal.openingDebit.toLocaleString()}
+                  {currencyLabel} {grandTotal.openingDebit.toLocaleString()}
                 </td>
                 <td className="border px-2 py-3 text-right">
-                  {grandTotal.openingCredit.toLocaleString()}
+                  {currencyLabel} {grandTotal.openingCredit.toLocaleString()}
                 </td>
                 <td className="border px-2 py-3 text-right">
-                  {grandTotal.trxDebit.toLocaleString()}
+                  {currencyLabel} {grandTotal.trxDebit.toLocaleString()}
                 </td>
                 <td className="border px-2 py-3 text-right">
-                  {grandTotal.trxCredit.toLocaleString()}
+                  {currencyLabel} {grandTotal.trxCredit.toLocaleString()}
                 </td>
                 <td className="border px-2 py-3 text-right">
-                  {grandTotal.closingDebit.toLocaleString()}
+                  {currencyLabel} {grandTotal.closingDebit.toLocaleString()}
                 </td>
                 <td className="border px-2 py-3 text-right">
-                  {grandTotal.closingCredit.toLocaleString()}
+                  {currencyLabel} {grandTotal.closingCredit.toLocaleString()}
                 </td>
               </tr>
             </tbody>

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import {  ChevronsUpDown } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FaCheck, FaPlus, FaTrashAlt } from "react-icons/fa";
@@ -52,6 +52,7 @@ import { generateVoucherNo } from "@/utils/helper/randomValueGenerator";
 import {
   focusNextVoucherAmount,
   focusNextVoucherParticular,
+  focusVoucherParticularByIndex,
 } from "@/utils/helper/voucherKeyboardFocus";
 import { useSelector } from "react-redux";
 import { selectDatePermission } from "@/components/store/store";
@@ -74,17 +75,20 @@ const isAllowedParticular = (item: any) => {
 };
 
 const isCashOrBank = (item: any) => {
-  const accountType = String(item?.accountType || item?.name || "")
-    .trim()
-    .toLowerCase();
+  // const accountType = String(item?.accountType || item?.name || "")
+  //   .trim()
+  //   .toLowerCase();
   const ledgerType = String(item?.ledger?.ledgerType || "")
     .trim()
     .toLowerCase();
 
-  return ["cash", "bank"].includes(accountType) && ["cash", "bank"].includes(ledgerType);
+  return ["cash", "bank", "bkash", "nagad"].includes(ledgerType);
 };
 
-const uniqueCashBankOptions = (items: any[] = []) => {
+const isReceiptCreditParticular = (item: any) => {
+  const ledgerName = String(item?.ledger?.ledgerType || "").trim().toLowerCase();
+  return ["sale", "obtaining short term loan", "obtaining long term loan"].includes(ledgerName);
+};const uniqueCashBankOptions = (items: any[] = []) => {
   const optionMap = new Map<string, any>();
 
   items.filter(isCashOrBank).forEach((item) => {
@@ -95,10 +99,11 @@ const uniqueCashBankOptions = (items: any[] = []) => {
     if (!optionMap.has(key)) optionMap.set(key, item);
   });
 
-  return Array.from(optionMap.values());
+  return Array.from(optionMap.values()).sort((a, b) => { const order: Record<string, number> = { cash: 0, bank: 1, bkash: 2, nagad: 3 }; const aType = String(a?.ledger?.ledgerType || "").trim().toLowerCase(); const bType = String(b?.ledger?.ledgerType || "").trim().toLowerCase(); return (order[aType] ?? 99) - (order[bType] ?? 99); });
 };
 
 const CreateReceiptVoucherList = () => {
+  const [particularSearch, setParticularSearch] = useState("");
   const navigate = useNavigate();
   const datePermission = useSelector(selectDatePermission);
 
@@ -228,7 +233,7 @@ const CreateReceiptVoucherList = () => {
             const options =
               entryType === "Debit"
                 ? cashBankOptions
-                : particularOptions.filter((item: any) => !isCashOrBank(item));
+                : particularOptions.filter(isReceiptCreditParticular);
 
             const selectedParticular = options?.find(
               (opt: any) => opt.id === entry?.particularId,
@@ -249,7 +254,12 @@ const CreateReceiptVoucherList = () => {
                         onValueChange={field.onChange}
                         value={field.value}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger onKeyDown={(event) => {
+                          if (event.key === "Tab" && !event.shiftKey) {
+                            event.preventDefault();
+                            focusVoucherParticularByIndex(index);
+                          }
+                        }}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -273,6 +283,16 @@ const CreateReceiptVoucherList = () => {
                             variant="outline"
                             className="w-full"
                             data-voucher-particular-index={index}
+                        onKeyDown={(event) => {
+                          if (
+                            event.key.length === 1 &&
+                            !event.ctrlKey &&
+                            !event.metaKey &&
+                            !event.altKey
+                          ) {
+                            event.preventDefault();
+                          }
+                        }}
                           >
                             {selectedParticular?.accountType ||
                               selectedParticular?.name ||
@@ -285,11 +305,12 @@ const CreateReceiptVoucherList = () => {
 
                         <PopoverContent className="w-[300px] p-0">
                           <Command>
-                            <CommandInput placeholder="Search..." />
+                            <CommandInput data-voucher-search-index={index} placeholder="Search..." value={particularSearch} onValueChange={setParticularSearch} />
                             <CommandList>
                               <CommandEmpty>No results</CommandEmpty>
-                              <CommandGroup>
-                                {options?.map((item: any) => (
+                              <CommandGroup>{options?.filter((item: any) =>
+                          String(item?.accountType || "").toLowerCase().includes(particularSearch.toLowerCase())
+                        ).map((item: any) => (
                                   <CommandItem
                                     key={item.id}
                                     onSelect={() => {

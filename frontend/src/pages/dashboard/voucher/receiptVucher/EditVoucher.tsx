@@ -28,7 +28,7 @@ import { Calendar } from "@/components/ui/calendar";
 
 import {
   useGetAllAccountsParticularQuery,
-  useGetAllCustomerParticularQuery,
+  useGetAllParticularQuery,
 } from "@/components/store/api/particularAccount/particularAccountApi";
 import {
   useGetVoucherByIdQuery,
@@ -39,6 +39,7 @@ import { generateVoucherNo } from "@/utils/helper/randomValueGenerator";
 import {
   focusNextVoucherAmount,
   focusNextVoucherParticular,
+  focusVoucherParticularByIndex,
 } from "@/utils/helper/voucherKeyboardFocus";
 import HomeLoader from "@/components/loader/HomeLoader";
 import ButtonLoader from "@/components/loader/ButtonLoader";
@@ -51,17 +52,20 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectDatePermission } from "@/components/store/store";
 const isCashOrBank = (item: any) => {
-  const accountType = String(item?.accountType || item?.name || "")
-    .trim()
-    .toLowerCase();
+  // const accountType = String(item?.accountType || item?.name || "")
+  //   .trim()
+  //   .toLowerCase();
   const ledgerType = String(item?.ledger?.ledgerType || "")
     .trim()
     .toLowerCase();
 
-  return ["cash", "bank"].includes(accountType) && ["cash", "bank"].includes(ledgerType);
+  return ["cash", "bank", "bkash", "nagad"].includes(ledgerType);
 };
 
-const uniqueCashBankOptions = (items: any[] = []) => {
+const isReceiptCreditParticular = (item: any) => {
+  const ledgerName = String(item?.ledger?.ledgerType || "").trim().toLowerCase();
+  return ["sale", "obtaining short term loan", "obtaining long term loan"].includes(ledgerName);
+};const uniqueCashBankOptions = (items: any[] = []) => {
   const optionMap = new Map<string, any>();
 
   items.filter(isCashOrBank).forEach((item) => {
@@ -72,9 +76,10 @@ const uniqueCashBankOptions = (items: any[] = []) => {
     if (!optionMap.has(key)) optionMap.set(key, item);
   });
 
-  return Array.from(optionMap.values());
+  return Array.from(optionMap.values()).sort((a, b) => { const order: Record<string, number> = { cash: 0, bank: 1, bkash: 2, nagad: 3 }; const aType = String(a?.ledger?.ledgerType || "").trim().toLowerCase(); const bType = String(b?.ledger?.ledgerType || "").trim().toLowerCase(); return (order[aType] ?? 99) - (order[bType] ?? 99); });
 };
 const EditVoucher = () => {
+  const [particularSearch, setParticularSearch] = useState("");
   const { id } = useParams();
   const datePermission = useSelector(selectDatePermission);
   const navigate = useNavigate();
@@ -86,8 +91,8 @@ const EditVoucher = () => {
 
   const { data: accounts, isLoading: accountsLoading } =
     useGetAllAccountsParticularQuery({});
-  const { data: customers, isLoading: customersLoading } =
-    useGetAllCustomerParticularQuery({});
+  const { data: allParticulars, isLoading: particularLoading } =
+    useGetAllParticularQuery({ size: 1000 });
   const { data: singleVoucher, isLoading: voucherLoading } =
     useGetVoucherByIdQuery(id);
 
@@ -134,11 +139,12 @@ const EditVoucher = () => {
     }
   }, [singleVoucher, reset]);
 
-  if (accountsLoading || customersLoading || voucherLoading)
+  if (accountsLoading || particularLoading || voucherLoading)
     return <HomeLoader />;
 
   const entries = watch("entries");
   const cashBankOptions = uniqueCashBankOptions(accounts?.data || []);
+  const receiptCreditOptions = allParticulars?.data?.filter(isReceiptCreditParticular) || [];
 
   const totalDebit = entries
     .filter((e) => e.type === "Debit")
@@ -252,7 +258,7 @@ const EditVoucher = () => {
         {/* Rows */}
         {fields.map((field, index) => {
           const isAccount = index === 0;
-          const options = isAccount ? cashBankOptions : customers?.data;
+          const options = isAccount ? cashBankOptions : receiptCreditOptions;
 
           return (
             <div
@@ -266,7 +272,15 @@ const EditVoucher = () => {
                   name={`entries.${index}.type`}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger className="border border-gray-400">
+                      <SelectTrigger
+                        className="border border-gray-400"
+                        onKeyDown={(event) => {
+                          if (event.key === "Tab" && !event.shiftKey) {
+                            event.preventDefault();
+                            focusVoucherParticularByIndex(index);
+                          }
+                        }}
+                      >
                         <SelectValue placeholder="Select one" />
                       </SelectTrigger>
                       <SelectContent>
@@ -294,11 +308,46 @@ const EditVoucher = () => {
                       <SelectTrigger
                         className="border border-gray-400"
                         data-voucher-particular-index={index}
+                        onKeyDown={(event) => {
+                          if (
+                            event.key.length === 1 &&
+                            !event.ctrlKey &&
+                            !event.metaKey &&
+                            !event.altKey
+                          ) {
+                            event.preventDefault();
+                          }
+                        }}
                       >
                         <SelectValue placeholder={"Select one"} />
                       </SelectTrigger>
                       <SelectContent>
-                        {options?.map((item: any) => (
+                        <div className="p-2">
+                          <Input
+                            data-voucher-search-index={index}
+                            placeholder="Search..."
+                            value={particularSearch}
+                            onChange={(e) => setParticularSearch(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && !e.currentTarget.dataset.navUsed) {
+                                e.preventDefault();
+                                const firstItem = e.currentTarget.closest("[role=\"listbox\"]")?.querySelector<HTMLElement>("[role=\"option\"]:not([data-disabled])");
+                                firstItem?.click();
+                                return;
+                              }
+                              if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                                e.currentTarget.dataset.navUsed = "true";
+                                return;
+                              }
+                              if (e.key !== "Escape") {
+                                e.stopPropagation();
+                              }
+                            }}
+                          />
+                        </div>
+                        {options?.filter((item: any) =>
+                          String(item?.accountType || "").toLowerCase().includes(particularSearch.toLowerCase())
+                        ).map((item: any) => (
                           <SelectItem key={item.id} value={item.id.toString()}>
                             {item.accountType}
                           </SelectItem>
