@@ -5,6 +5,7 @@ import PdfCashInHandReport from "@/components/common/PrintPdf/PdfCashInHandRepor
 import HomeLoader from "@/components/loader/HomeLoader";
 import { useGetCashInHandReportQuery } from "@/components/store/api/report/accountingReportApi";
 import { selectCurrentCurrency } from "@/components/store/store";
+import { formatAmount } from "@/utils/formatter";
 import Heading from "@/components/typography/Heading";
 import { Button } from "@/components/ui/button";
 import { dateFormatter } from "@/utils/helper/dateFormatter";
@@ -29,6 +30,8 @@ const CashInHandReport = () => {
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
 
   const currentCurrency = useSelector(selectCurrentCurrency);
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
+  const formatCashAmount = (value: any) => `${currencyLabel || "৳"} ${formatAmount(value)}`;
   const { data: cashInHandData, isLoading, isFetching } = useGetCashInHandReportQuery(queryParams);
 
   // Search handler preserved exactly
@@ -187,12 +190,14 @@ const CashInHandReport = () => {
                 <td className="px-4 py-2 font-bold text-zinc-800 uppercase tracking-tight">
                   Balance c/d
                 </td>
-                <td colSpan={3} className="px-4 py-2"></td>
+                <td className="px-4 py-2"></td>
+                <td className="px-4 py-2 text-right font-bold">{summary?.totalDebit ? formatCashAmount(summary.totalDebit) : formatCashAmount(0)}</td>
+                <td className="px-4 py-2 text-right font-bold">{summary?.totalCredit ? formatCashAmount(summary.totalCredit) : formatCashAmount(0)}</td>
                 <td className="px-4 py-2 text-right text-secondary font-black text-base border-r border-zinc-200">
-                  {summary?.totalBalanceDebit || "0.00"}
+                  {formatCashAmount(summary?.totalBalanceDebit || 0)}
                 </td>
                 <td className="px-4 py-2 text-right text-zinc-700 font-black text-base">
-                  {summary?.totalBalanceCredit || "0.00"}
+                  {formatCashAmount(summary?.totalBalanceCredit || 0)}
                 </td>
               </tr>
             </tbody>

@@ -82,7 +82,7 @@ const ExpanseVoucherList: React.FC = () => {
 
   const filteredData = dynamicData.filter((item) => {
     const search = searchTerm.toLowerCase();
-    const matchesSearch = item.invoice.toLowerCase().includes(search);
+    const matchesSearch = [item.id, item.invoice, item.date, item.debit, item.credit, item.note].some((value) => String(value ?? "").toLowerCase().includes(search));
     const itemDate = new Date(item.rawDate);
     itemDate.setHours(0, 0, 0, 0);
     const fromDateValue = fromDate ? new Date(fromDate) : null;
@@ -291,7 +291,7 @@ const ExpanseVoucherList: React.FC = () => {
         createButtonLabel="Create"
         createButtonIcon={<Plus size={20} />}
         createButtonLink="/create-expanse-voucher"
-        searchPlaceholder="Search by invoice"
+        searchPlaceholder="Search by SL/invoice/date/debit/credit/note"
       />
 
       <VoucherDateRangeFilter

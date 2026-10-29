@@ -29,6 +29,7 @@ export const focusNextVoucherParticular = (currentIndex: number) => {
 
     if (nextTrigger) {
       nextTrigger.focus({ preventScroll: true });
+      nextTrigger.click();
       return;
     }
 
@@ -50,5 +51,19 @@ export const focusNextVoucherAmount = (currentIndex: number) => {
 
     nextInput?.focus({ preventScroll: true });
     nextInput?.select();
+  }, 0);
+};
+
+export const focusVoucherParticularByIndex = (index: number) => {
+  closeOpenVoucherSelect();
+  window.setTimeout(() => {
+    const trigger = document.querySelector<HTMLElement>(`[data-voucher-particular-index="${index}"]`);
+    if (trigger) {
+      trigger.focus({ preventScroll: true });
+      trigger.click();
+      window.setTimeout(() => {
+        document.querySelector<HTMLInputElement>(`[data-voucher-search-index="${index}"]`)?.focus();
+      }, 0);
+    }
   }, 0);
 };

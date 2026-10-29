@@ -201,35 +201,35 @@ export const getAllVouchers = async (req: Request, res: Response) => {
         whereCondition.date.lte = endDate;
       }
     }
-    if (search) {
-      whereCondition.OR = [
-        { narration: { contains: String(search) } },
-        { voucherNo: { contains: String(search) } }, // ← এটা যোগ করো
-      ];
-    }
-
-    const [vouchers, total] = await Promise.all([
-      prisma.voucher.findMany({
-        where: whereCondition,
-        include: {
-          particulars: {
-            include: {
-              particular: {
-                include: {
-                  ledger: {
-                    include: { group: true },
-                  },
-                },
+    const allVouchers = await prisma.voucher.findMany({
+      where: whereCondition,
+      include: {
+        particulars: {
+          include: {
+            particular: {
+              include: {
+                ledger: { include: { group: true } },
               },
             },
           },
         },
-        skip,
-        take,
-        orderBy: { id: "desc" },
-      }),
-      prisma.voucher.count({ where: whereCondition }),
-    ]);
+      },
+      orderBy: { id: "desc" },
+    });
+
+    const normalizedSearch = String(search || "").trim().toLowerCase().replace(/,/g, "");
+    const filteredVouchers = normalizedSearch
+      ? allVouchers.filter((voucher) => {
+          const totalDebit = voucher.particulars.filter((entry) => entry.type === "Debit").reduce((sum, entry) => sum + Number(entry.amount), 0);
+          const totalCredit = voucher.particulars.filter((entry) => entry.type === "Credit").reduce((sum, entry) => sum + Number(entry.amount), 0);
+          const voucherDate = new Date(voucher.date);
+          const searchableValues = [voucher.id, voucher.voucherNo, voucher.narration, voucherDate.toISOString().slice(0, 10), voucherDate.toLocaleDateString("en-GB"), totalDebit, totalCredit, totalDebit.toLocaleString("en-US"), totalCredit.toLocaleString("en-US")];
+          return searchableValues.some((value) => String(value ?? "").toLowerCase().replace(/,/g, "").includes(normalizedSearch));
+        })
+      : allVouchers;
+
+    const total = filteredVouchers.length;
+    const vouchers = filteredVouchers.slice(skip, skip + take);
 
     res.status(200).json({
       success: true,
