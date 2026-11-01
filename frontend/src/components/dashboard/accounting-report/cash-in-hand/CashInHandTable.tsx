@@ -1,6 +1,8 @@
 import Heading from "@/components/typography/Heading";
 import { dateFormatter } from "@/utils/helper/dateFormatter";
 import { formatCurrency } from "@/utils/formatter";
+import { useSelector } from "react-redux";
+import { RootState } from "@/components/store/store";
 
 export interface LedgerRow {
   date: string;
@@ -25,6 +27,9 @@ export interface LedgerReportResponse {
 }
 
 const CashInHandTable = ({ data, tableTitle }: { data: LedgerReportResponse, tableTitle: string }) => {
+  const currencySymbol = useSelector(
+    (state: RootState) => state.currencies.currentCurrency.symbol,
+  );
   return (
     <div>
       <Heading size="20" variant="secondary" className="p-4 bg-primary text-white rounded-t-md">
@@ -93,7 +98,7 @@ const CashInHandTable = ({ data, tableTitle }: { data: LedgerReportResponse, tab
             <td className="border border-slate-400 px-4 py-1.5"></td>
             <td className="border border-slate-400 px-4 py-1.5"></td>
             <td className="border border-slate-400 px-4 py-1.5 text-right font-bold">
-              {formatCurrency(data?.summary?.totalBalanceDebit)}
+              {formatCurrency(data?.summary?.totalBalanceDebit, currencySymbol)}
             </td>
             <td className="border border-slate-400 px-4 py-1.5"></td>
           </tr>

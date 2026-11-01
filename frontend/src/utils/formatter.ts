@@ -52,11 +52,20 @@ export const formatAmount = (value: any, digits = 2): string => {
  */
 export const formatCurrency = (
   value: any,
-  symbol = "৳",
+  symbol = getSavedCurrencySymbol(),
   digits = 2,
 ): string => {
   return `${symbol} ${formatAmount(value, digits)}`;
 };
+
+function getSavedCurrencySymbol(): string {
+  try {
+    const saved = JSON.parse(localStorage.getItem("currentCurrency") || "null");
+    return saved?.symbol || saved?.name || "৳";
+  } catch {
+    return "৳";
+  }
+}
 
 /**
  * Compact format (K, M, B)

@@ -1,4 +1,6 @@
 import { formatCurrency } from "@/utils/formatter";
+import { useSelector } from "react-redux";
+import { RootState } from "@/components/store/store";
 
 import {
   Table,
@@ -42,6 +44,9 @@ const format = (num: number) =>
       : num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export default function CashSummaryTable({ data, onAccountClick }: Props) {
+  const currencySymbol = useSelector(
+    (state: RootState) => state.currencies.currentCurrency.symbol,
+  );
   if (!data) return null;
   const debitRows = data.inflows ?? [];
   const creditRows = data.outflows ?? [];
@@ -106,8 +111,8 @@ export default function CashSummaryTable({ data, onAccountClick }: Props) {
             <TableCell></TableCell>
             <TableCell className="font-black uppercase tracking-tighter text-sm">Trial Balance Totals</TableCell>
             <TableCell></TableCell>
-            <TableCell className="text-right font-black text-emerald-400 text-base">{formatCurrency(data.totals.debit)}</TableCell>
-            <TableCell className="text-right font-black text-emerald-400 text-base">{formatCurrency(data.totals.credit)}</TableCell>
+            <TableCell className="text-right font-black text-emerald-400 text-base">{formatCurrency(data.totals.debit, currencySymbol)}</TableCell>
+            <TableCell className="text-right font-black text-emerald-400 text-base">{formatCurrency(data.totals.credit, currencySymbol)}</TableCell>
           </TableRow>
         </TableBody>
       </Table>

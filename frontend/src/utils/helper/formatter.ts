@@ -1,6 +1,15 @@
 import moment from "moment";
 import { fallback } from "../common/fallback";
 
+const selectedCurrencySymbol = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem("currentCurrency") || "null");
+    return saved?.symbol || saved?.name || "৳";
+  } catch {
+    return "৳";
+  }
+};
+
 type FormatType =
   | "amount"
   | "date"
@@ -31,9 +40,11 @@ const formatter = ({
 }: FormatOptions): string => {
   switch (type) {
     case "amount": {
-      if (amount == null) return fallback.amount + "৳";
+      if (amount == null) return fallback.amount + selectedCurrencySymbol();
       const value = +amount;
-      return !isNaN(value) ? value.toFixed(2) + "৳" : fallback.amount + "৳";
+      return !isNaN(value)
+        ? value.toFixed(2) + selectedCurrencySymbol()
+        : fallback.amount + selectedCurrencySymbol();
     }
     case "date": {
       return dateTime

@@ -1,9 +1,14 @@
 import { LedgerData } from "@/pages/dashboard/acountingReport/LedgerReportPage";
 import { formatCurrency, toFixedAmount } from "@/utils/formatter";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
+import { RootState } from "@/components/store/store";
 // Import the common helper
 
 export default function LedgerTable({ account }: { account: LedgerData }) {
+  const currencySymbol = useSelector(
+    (state: RootState) => state.currencies.currentCurrency.symbol,
+  );
   console.log("account data",account)
   return (
     <div className="bg-white rounded-xl shadow-sm border border-zinc-200 overflow-visible">
@@ -93,17 +98,17 @@ export default function LedgerTable({ account }: { account: LedgerData }) {
               <td className="px-4 py-4"></td>
               {/* <td className="px-4 py-4 text-right font-bold text-rose-400 border-t border-white/20"> */}
               <td className="px-4 py-4 text-right font-bold  border-t border-white/20">
-                {formatCurrency(account.summary.totalDebit)}
+                  {formatCurrency(account.summary.totalDebit, currencySymbol)}
               </td>
               {/* <td className="px-4 py-4 text-right font-bold text-emerald-400 border-t border-white/20"> */}
               <td className="px-4 py-4 text-right font-bold  border-t border-white/20">
-                {formatCurrency(account.summary.totalCredit)}
+                  {formatCurrency(account.summary.totalCredit, currencySymbol)}
               </td>
               <td className="px-4 py-4 text-right font-black text-secondary text-sm">
-                {account.summary.closingBalance.balanceType === "Dr" ? formatCurrency(account.summary.closingBalance.balance) : ""}
+                  {account.summary.closingBalance.balanceType === "Dr" ? formatCurrency(account.summary.closingBalance.balance, currencySymbol) : ""}
               </td>
               <td className="px-4 py-4 text-right font-black text-secondary text-sm">
-                {account.summary.closingBalance.balanceType === "Cr" ? formatCurrency(account.summary.closingBalance.balance) : ""}
+                  {account.summary.closingBalance.balanceType === "Cr" ? formatCurrency(account.summary.closingBalance.balance, currencySymbol) : ""}
               </td>
             </tr>
           </tbody>

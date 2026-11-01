@@ -26,8 +26,8 @@ export default function CurrencySelect() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleChange = (currencyName: string) => {
-    const selectedCurrency = list.find((c) => c.name === currencyName);
+  const handleChange = (currencyCode: string) => {
+    const selectedCurrency = list.find((c) => c.code === currencyCode);
     if (selectedCurrency) {
       dispatch(setCurrentCurrency(selectedCurrency));
       setOpen(false);
@@ -45,10 +45,10 @@ export default function CurrencySelect() {
         <div className="flex items-center gap-2">
           <img
             src={currentCurrency.flag}
-            alt={currentCurrency.name}
+            alt={currentCurrency.code}
             className="w-6 h-4"
           />
-          <span className="line-clamp-1">{currentCurrency.name}</span>
+          <span className="line-clamp-1">{currentCurrency.code}</span>
         </div>
         <svg
           className={`h-4 w-4 opacity-50 transition-transform ${
@@ -72,21 +72,21 @@ export default function CurrencySelect() {
         <div className="absolute p-1 z-50 mt-1 space-y-1 max-h-60 rounded-md min-w-max border bg-popover text-popover-foreground shadow-md">
           {list.map((currency) => (
             <button
-              key={currency.name}
+              key={currency.code}
               type="button"
-              onClick={() => handleChange(currency.name)}
+              onClick={() => handleChange(currency.code)}
               className={`relative flex w-full items-center gap-2 rounded-sm py-1.5 px-2 text-sm transition-colors ${
-                currency.name === currentCurrency.name
+                currency.code === currentCurrency.code
                   ? "bg-primary text-white"
                   : "bg-secondary/10 hover:bg-primary hover:text-white"
               }`}
             >
               <img
                 src={currency.flag}
-                alt={currency.name}
+                alt={currency.code}
                 className="w-6 h-4 object-cover"
               />
-              <span>{currency.name}</span>
+              <span>{currency.code}</span>
             </button>
           ))}
         </div>

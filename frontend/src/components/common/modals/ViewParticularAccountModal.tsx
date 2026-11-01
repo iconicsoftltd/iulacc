@@ -2,6 +2,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Building, Phone, Mail, MapPin } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/components/store/store";
+import { formatCurrency as formatAmountWithCurrency } from "@/utils/formatter";
 
 interface ParticularAccountType {
   id: number;
@@ -51,6 +54,9 @@ const ViewParticularAccountModal: React.FC<ViewParticularAccountModalProps> = ({
   particular,
   onClose,
 }) => {
+  const currencySymbol = useSelector(
+    (state: RootState) => state.currencies.currentCurrency.symbol,
+  );
   if (!particular) return null;
 
   const formatDate = (dateString: string) => {
@@ -59,13 +65,6 @@ const ViewParticularAccountModal: React.FC<ViewParticularAccountModalProps> = ({
       month: "long",
       day: "numeric",
     });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-BD", {
-      style: "currency",
-      currency: "BDT",
-    }).format(amount);
   };
 
   return (
@@ -93,7 +92,7 @@ const ViewParticularAccountModal: React.FC<ViewParticularAccountModalProps> = ({
             Opening Balance
           </Label>
           <p className="text-lg font-semibold">
-            {formatCurrency(particular.openingBalance)}
+            {formatAmountWithCurrency(particular.openingBalance, currencySymbol)}
           </p>
         </div>
 
@@ -102,7 +101,7 @@ const ViewParticularAccountModal: React.FC<ViewParticularAccountModalProps> = ({
             Current Balance
           </Label>
           <p className="text-lg font-semibold">
-            {formatCurrency(particular.balance)}
+            {formatAmountWithCurrency(particular.balance, currencySymbol)}
           </p>
         </div>
 

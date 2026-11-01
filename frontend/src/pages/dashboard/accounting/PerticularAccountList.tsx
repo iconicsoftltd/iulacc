@@ -32,6 +32,8 @@ import ViewParticularAccountModal from "@/components/common/modals/ViewParticula
 import { timeDateFormatter } from "@/utils/helper/timeDateFormatter";
 import ReusableTableHeader from "@/components/common/ReusableTableHeader";
 import { formatAmount } from "@/utils/formatter";
+import { useSelector } from "react-redux";
+import { RootState } from "@/components/store/store";
 
 export interface ParticularAccountType {
   id: number;
@@ -73,6 +75,9 @@ export interface ParticularAccountType {
 }
 
 const ParticularAccountList: React.FC = () => {
+  const currentCurrency = useSelector(
+    (state: RootState) => state.currencies.currentCurrency,
+  );
   // State Management
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -167,7 +172,7 @@ const ParticularAccountList: React.FC = () => {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return `৳ ${formatAmount(amount)}`;
+    return `${currentCurrency.symbol} ${formatAmount(amount)}`;
   };
 
   // Columns
