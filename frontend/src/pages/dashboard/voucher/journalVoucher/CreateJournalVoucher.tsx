@@ -490,8 +490,9 @@ const CreateJournalVoucher = () => {
           {selectedFiles.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {selectedFiles.map((file, index) => (
-                <span key={`${file.name}-${index}`} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700">
-                  {file.name}
+                <span key={`${file.name}-${index}`} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700">
+                  <span>{file.name}</span>
+                  <button type="button" aria-label={`Remove ${file.name}`} onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== index))} className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600 hover:bg-red-200">×</button>
                 </span>
               ))}
             </div>

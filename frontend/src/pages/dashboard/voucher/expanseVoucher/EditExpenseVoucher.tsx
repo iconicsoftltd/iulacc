@@ -527,15 +527,15 @@ const EditExpenseVoucher = () => {
           {(existingAttachments.length > 0 || selectedFiles.length > 0) && (
             <div className="mt-3 flex flex-wrap gap-2">
               {existingAttachments.map((attachment: any, index: number) => (
-                <a
+                <div
                   key={`existing-${attachment.fileUrl || attachment.originalName || index}`}
-                  href={attachment.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
                   className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700"
                 >
-                  {attachment.originalName || attachment.fileName || "Attachment"}
-                </a>
+                  <a href={attachment.fileUrl} target="_blank" rel="noreferrer">
+                    {attachment.originalName || attachment.fileName || "Attachment"}
+                  </a>
+                  <button type="button" aria-label={`Remove ${attachment.originalName || attachment.fileName || "attachment"}`} onClick={() => setValue("attachments", (watch("attachments") || []).filter((_, i) => i !== index))} className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600 hover:bg-red-200">×</button>
+                </div>
               ))}
               {selectedFiles.map((file, index) => (
                 <span
@@ -543,6 +543,7 @@ const EditExpenseVoucher = () => {
                   className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700"
                 >
                   {file.name}
+                  <button type="button" aria-label={`Remove ${file.name}`} onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== index))} className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600 hover:bg-red-200">×</button>
                 </span>
               ))}
             </div>
