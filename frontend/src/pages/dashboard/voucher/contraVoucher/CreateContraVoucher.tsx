@@ -40,29 +40,19 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectDatePermission } from "@/components/store/store";
 
-const isCashOrBank = (item: any) => {
-  // const accountType = String(item?.accountType || item?.name || "")
-  //   .trim()
-  //   .toLowerCase();
-  const ledgerType = String(item?.ledger?.ledgerType || "")
-    .trim()
-    .toLowerCase();
-
-  return ["cash", "bank", "bkash", "nagad"].includes(ledgerType);
+const normalizeOptionText = (value: unknown) => String(value ?? "").trim().toLowerCase();
+const isReceiptDebitOption = (item: any) => {
+  const ledgerName = normalizeOptionText(item?.ledger?.ledgerType);
+  const accountName = normalizeOptionText(item?.accountType || item?.name);
+  const groupName = normalizeOptionText(item?.ledger?.group?.accountType);
+  const groupAccount = normalizeOptionText(item?.ledger?.group?.account);
+  const isCashBank = [ledgerName, accountName].some((name) => /^(cash|cash in hand|cash at bank|bank|bkash|nagad)$/.test(name));
+  return (groupName.includes("current asset") || groupAccount === "assets") && isCashBank;
 };
-
-const uniqueCashBankOptions = (items: any[] = []) => {
-  const optionMap = new Map<string, any>();
-
-  items.filter(isCashOrBank).forEach((item) => {
-    const key = String(item?.accountType || item?.name || item?.id)
-      .trim()
-      .toLowerCase();
-
-    if (!optionMap.has(key)) optionMap.set(key, item);
-  });
-
-  return Array.from(optionMap.values()).sort((a, b) => { const order: Record<string, number> = { cash: 0, bank: 1, bkash: 2, nagad: 3 }; const aType = String(a?.ledger?.ledgerType || "").trim().toLowerCase(); const bType = String(b?.ledger?.ledgerType || "").trim().toLowerCase(); return (order[aType] ?? 99) - (order[bType] ?? 99); });
+const uniqueVoucherOptions = (items: any[] = []) => {
+  const seen = new Map<string, any>();
+  items.forEach((item) => { const key = String(item?.id ?? item?.accountType ?? item?.name); if (!seen.has(key)) seen.set(key, item); });
+  return Array.from(seen.values());
 };
 
 const CreateContraVoucher = () => {
@@ -104,7 +94,7 @@ const CreateContraVoucher = () => {
   });
 
   // Contra rule: both Dr and Cr only show Cash/Bank particulars
-  const cashBankOptions = uniqueCashBankOptions(accounts?.data || []);
+  const cashBankOptions = uniqueVoucherOptions((accounts?.data || []).filter(isReceiptDebitOption));
   const filteredCashBankOptions = cashBankOptions.filter((item: any) =>
     String(item?.accountType || item?.name || "")
       .toLowerCase()
@@ -525,9 +515,8 @@ const CreateContraVoucher = () => {
           {selectedFiles.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {selectedFiles.map((file, index) => (
-                <span key={`${file.name}-${index}`} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700">
-                  <span>{file.name}</span>
-                  <button type="button" aria-label={`Remove ${file.name}`} onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== index))} className="flex h-4 w-4 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600 hover:bg-red-200">×</button>
+                <span key={`${file.name}-${index}`} className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-700">
+                  {file.name}
                 </span>
               ))}
             </div>
