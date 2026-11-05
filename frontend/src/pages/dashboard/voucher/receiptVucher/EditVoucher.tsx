@@ -50,6 +50,11 @@ import type { FormData } from "@/schemas/voucher/voucherSchema";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectDatePermission } from "@/components/store/store";
+const getVoucherOptionLabel = (item: any) => {
+  const particular = item?.accountType || item?.name || "";
+  const ledger = item?.ledger?.ledgerType || "";
+  return particular && ledger ? `${particular} (${ledger})` : particular || ledger || "Unnamed";
+};
 const isCashOrBank = (item: any) => {
   // const accountType = String(item?.accountType || item?.name || "")
   //   .trim()
@@ -61,9 +66,18 @@ const isCashOrBank = (item: any) => {
   return ["cash", "bank", "bkash", "nagad"].includes(ledgerType);
 };
 
+const normalizeOptionText = (value: unknown) => String(value ?? "").trim().toLowerCase();
 const isReceiptCreditParticular = (item: any) => {
-  const ledgerName = String(item?.ledger?.ledgerType || "").trim().toLowerCase();
-  return ["sale", "obtaining short term loan", "obtaining long term loan"].includes(ledgerName);
+  const ledgerType = normalizeOptionText(item?.ledger?.ledgerType);
+  const groupName = normalizeOptionText(item?.ledger?.group?.accountType);
+  const groupAccount = normalizeOptionText(item?.ledger?.group?.account);
+  if (ledgerType.includes("accounts payable")) return false;
+  const isCurrentAsset = groupName.includes("current asset") ||
+    (groupAccount === "assets" && !groupName.includes("fixed asset"));
+  const isCashBank = ["cash", "cash in hand", "cash at bank", "bank", "bkash", "nagad"].includes(ledgerType);
+  if (isCurrentAsset) return !isCashBank;
+  return groupAccount === "income" || groupAccount === "liability" || groupAccount === "equity" ||
+    /income|non.?operating|short.?term liability|long.?term liability|equity/.test(groupName);
 };const uniqueCashBankOptions = (items: any[] = []) => {
   const optionMap = new Map<string, any>();
 
@@ -395,7 +409,7 @@ const EditVoucher = () => {
                           String(item?.accountType || "").toLowerCase().includes(particularSearch.toLowerCase())
                         ).map((item: any) => (
                           <SelectItem key={item.id} value={item.id.toString()}>
-                            {item.accountType}
+                            {getVoucherOptionLabel(item)}
                           </SelectItem>
                         ))}
                       </SelectContent>
