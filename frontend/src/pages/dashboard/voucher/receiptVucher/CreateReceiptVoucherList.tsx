@@ -57,6 +57,11 @@ import { useSelector } from "react-redux";
 import { selectDatePermission } from "@/components/store/store";
 
 const normalizeOptionText = (value: unknown) => String(value ?? "").trim().toLowerCase();
+const getVoucherOptionLabel = (item: any) => {
+  const particular = item?.accountType || item?.name || "";
+  const ledger = item?.ledger?.ledgerType || "";
+  return particular && ledger ? `${particular} (${ledger})` : particular || ledger || "Unnamed";
+};
 const isCashBankOption = (item: any) =>
   [normalizeOptionText(item?.ledger?.ledgerType), normalizeOptionText(item?.accountType || item?.name)]
     .some((name) => /^(cash|cash in hand|cash at bank|bank|bkash|nagad)$/.test(name));
@@ -66,7 +71,10 @@ const isCurrentAssetOption = (item: any) => {
   return groupName.includes("current asset") || (groupAccount === "assets" && !groupName.includes("fixed asset"));
 };
 const isReceiptDebitOption = (item: any) => isCurrentAssetOption(item) && isCashBankOption(item);
+const isAccountsPayableOption = (item: any) =>
+  normalizeOptionText(item?.ledger?.ledgerType).includes("accounts payable");
 const isReceiptCreditOption = (item: any) => {
+  if (isAccountsPayableOption(item)) return false;
   if (isCurrentAssetOption(item)) return !isCashBankOption(item);
   const groupName = normalizeOptionText(item?.ledger?.group?.accountType);
   const groupAccount = normalizeOptionText(item?.ledger?.group?.account);
@@ -304,11 +312,7 @@ const CreateReceiptVoucherList = () => {
                           }
                         }}
                           >
-                            {selectedParticular?.accountType ||
-                              selectedParticular?.name ||
-                              selectedParticular?.ledger?.ledgerType ||
-                              selectedParticular?.ledger?.group?.account ||
-                              "Select Particular"}
+                            {selectedParticular ? getVoucherOptionLabel(selectedParticular) : "Select Particular"}
                             <ChevronsUpDown />
                           </Button>
                         </PopoverTrigger>
@@ -336,7 +340,7 @@ const CreateReceiptVoucherList = () => {
                                           : "opacity-0",
                                       )}
                                     />
-                                    {item.accountType || item.name}
+                                    {getVoucherOptionLabel(item)}
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
