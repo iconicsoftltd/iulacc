@@ -92,27 +92,25 @@ const PdfCashInHandReport = (
       },
     ]) || [];
 
-  /* ================= Balance c/d ================= */
+  /* ================= Total / Balance c/d ================= */
   body.push([
     "",
     "",
     {
-      content: "Balance c/d",
+      content: "BALANCE C/D",
       styles: { fontStyle: "bold" },
     },
     "",
-    "",
-    "",
+    { content: `${currentCurrency.name} ${Number(report?.summary?.totalDebit || 0).toFixed(2)}`, styles: { fontStyle: "bold", halign: "right" } },
+    { content: `${currentCurrency.name} ${Number(report?.summary?.totalCredit || 0).toFixed(2)}`, styles: { fontStyle: "bold", halign: "right" } },
     {
-      content: `${currentCurrency.name} ${
-        report?.summary?.totalBalanceDebit?.toFixed(2) || "0.00"
-      }`,
+      content: `${currentCurrency.name} ${Number(report?.summary?.totalBalanceDebit || 0).toFixed(2)}`,
       styles: {
         fontStyle: "bold",
         halign: "right",
       },
     },
-    "",
+    { content: `${currentCurrency.name} ${Number(report?.summary?.totalBalanceCredit || 0).toFixed(2)}`, styles: { fontStyle: "bold", halign: "right" } },
   ]);
 
   autoTable(doc, {
