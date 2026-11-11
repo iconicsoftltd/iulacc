@@ -7,7 +7,15 @@ const IncomeStatementReportPrint = (
   reportType: string,
 ) => {
   const logo = appConfiguration.logo;
-  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
+  const formatPrintCurrency = (currency: any) => {
+    const value = String(currency?.name || currency?.code || "").trim();
+    const normalized = value.toUpperCase();
+    return normalized === "BDT" || normalized === "TAKA" || value === "৳"
+      ? "&#2547;"
+      : value;
+  };
+  //const currencyLabel = formatPrintCurrency(currentCurrency);  const currencyLabel = currencyLabel?.toUpperCase() === "BDT" ? "৳" : currencyLabel || "৳";
+  const currencyLabel = formatPrintCurrency(currentCurrency) || "&#2547;";
   const report = reportData?.data;
 
   const html = `
@@ -32,18 +40,31 @@ const IncomeStatementReportPrint = (
             });
           };
         </script>
-        <style>
+        <style>          /* PDF_LAYOUT_NORMALIZATION */
+          table { width: 100% !important; table-layout: auto !important; border-collapse: collapse; }
+          th, td { box-sizing: border-box; }
+          td.text-right, th.text-right, .amount, .currency { white-space: nowrap !important; word-break: keep-all !important; overflow-wrap: normal !important; font-variant-numeric: tabular-nums; }
+          @media print { body { overflow: visible !important; } table { page-break-inside: auto; } tr { page-break-inside: avoid; } }
           @media print {
             body { -webkit-print-color-adjust: exact; color-adjust: exact; }
             .page-break { page-break-after: always; }
             .no-break { page-break-inside: avoid; }
              .signature-section {
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      padding: 0 24px;
+      position: static;
+      display: grid !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 24px;
+      width: 100%;
+      margin-top: 0;
+      padding: 72px 24px 0;
+        /* signature separator removed to keep report layout clean */
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
+      .signature-section p {
+        text-align: center;
+        white-space: nowrap;
+      }
     .content-container {
       min-height: calc(100vh - 100px);
     }
@@ -76,10 +97,10 @@ const IncomeStatementReportPrint = (
                     Classification
                   </th>
                   <th class="border border-gray-300 p-2 text-center font-semibold">
-                    Amount (${currencyLabel})
+                    Amount ${currencyLabel}
                   </th>
                   <th class="border border-gray-300 p-2 text-center font-semibold">
-                    Subtotal (${currencyLabel})
+                    Subtotal ${currencyLabel}
                   </th>
                 </tr>
               </thead>
@@ -100,7 +121,7 @@ const IncomeStatementReportPrint = (
                   <tr key="rev-${i}" class="${i % 2 === 0 ? "bg-white" : "bg-gray-50"}">
                     <td class="border border-gray-300 p-2">${item.account || "-"}</td>
                     <td class="border border-gray-300 p-2">${item.classification || "-"}</td>
-                    <td class="border border-gray-300 p-2 text-right">(${currencyLabel}) ${item.amount?.toFixed(2) || "0.00"}</td>
+                    <td class="border border-gray-300 p-2 text-right">${currencyLabel} ${item.amount?.toFixed(2) || "0.00"}</td>
                     <td class="border border-gray-300 p-2 text-right"></td>
                   </tr>
                 `,
@@ -114,7 +135,7 @@ const IncomeStatementReportPrint = (
                   <td class="border border-gray-300 p-2"></td>
                   <td class="border border-gray-300 p-2 text-right"></td>
                   <td class="border border-gray-300 p-2 text-right font-bold">
-                    (${currencyLabel}) ${report?.totalRevenue?.toFixed(2) || "0.00"}
+                    ${currencyLabel} ${report?.totalRevenue?.toFixed(2) || "0.00"}
                   </td>
                 </tr>
 
@@ -136,7 +157,7 @@ ${
   <tr class="${i % 2 === 0 ? "bg-white" : "bg-gray-50"}">
     <td class="border border-gray-300 p-2">${item.account || "-"}</td>
     <td class="border border-gray-300 p-2">${item.classification || "-"}</td>
-    <td class="border border-gray-300 p-2 text-right">(${currencyLabel}) ${item.amount?.toFixed(2) || "0.00"}</td>
+    <td class="border border-gray-300 p-2 text-right">${currencyLabel} ${item.amount?.toFixed(2) || "0.00"}</td>
     <td class="border border-gray-300 p-2 text-right"></td>
   </tr>
 `,
@@ -150,7 +171,7 @@ ${
   <td class="border border-gray-300 p-2"></td>
   <td class="border border-gray-300 p-2 text-right"></td>
   <td class="border border-gray-300 p-2 text-right font-bold">
-    (${currencyLabel}) ${report?.totalCogs?.toFixed(2) || "0.00"}
+    ${currencyLabel} ${report?.totalCogs?.toFixed(2) || "0.00"}
   </td>
 </tr>
 
@@ -177,7 +198,7 @@ ${
                   <tr key="exp-${i}" class="${i % 2 === 0 ? "bg-white" : "bg-gray-50"}">
                     <td class="border border-gray-300 p-2">${item.account || "-"}</td>
                     <td class="border border-gray-300 p-2">${item.classification || "-"}</td>
-                    <td class="border border-gray-300 p-2 text-right">(${currencyLabel}) ${item.amount?.toFixed(2) || "0.00"}</td>
+                    <td class="border border-gray-300 p-2 text-right">${currencyLabel} ${item.amount?.toFixed(2) || "0.00"}</td>
                     <td class="border border-gray-300 p-2 text-right"></td>
                   </tr>
                 `,
@@ -191,7 +212,7 @@ ${
                   <td class="border border-gray-300 p-2"></td>
                   <td class="border border-gray-300 p-2 text-right"></td>
                   <td class="border border-gray-300 p-2 text-right font-bold">
-                    (${currencyLabel}) ${report?.totalExpense?.toFixed(2) || "0.00"}
+                    ${currencyLabel} ${report?.totalExpense?.toFixed(2) || "0.00"}
                   </td>
                 </tr>
 
@@ -207,7 +228,7 @@ ${
                   <td class="border border-gray-300 p-2"></td>
                   <td class="border border-gray-300 p-2 text-right"></td>
                   <td class="border border-gray-300 p-2 text-right text-lg">
-                    (${currencyLabel}) ${report?.netIncome?.toFixed(2) || "0.00"}
+                    ${currencyLabel} ${report?.netIncome?.toFixed(2) || "0.00"}
                   </td>
                 </tr>
               </tbody>
@@ -216,7 +237,7 @@ ${
             </div>
             </div>
             <!-- Footer Signatures -->
-            <div class="flex justify-between text-sm signature-section">
+<div class="signature-section text-sm">
               <p class="font-semibold underline">General Manager</p>
               <p class="font-semibold underline">Finance Manager</p>
               <p class="font-semibold underline">Accounts Officer</p>

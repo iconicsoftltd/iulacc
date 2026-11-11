@@ -82,20 +82,26 @@ const SalesSummaryReportPrint = (
         <tr class="bg-gray-100 font-semibold">
           <td colspan="2" class="border p-2 text-right">Total:</td>
           <td class="border p-2 text-right">
-            (${currencyLabel}) ${report?.totals?.totalValueExcl?.toFixed(2) || "0.00"}
+            ${currencyLabel} ${report?.totals?.totalValueExcl?.toFixed(2) || "0.00"}
           </td>
           <td class="border p-2"></td>
           <td class="border p-2 text-right">
-            (${currencyLabel}) ${report?.totals?.totalVatAmount?.toFixed(2) || "0.00"}
+            ${currencyLabel} ${report?.totals?.totalVatAmount?.toFixed(2) || "0.00"}
           </td>
           <td class="border p-2 text-right">
-            (${currencyLabel}) ${report?.totals?.totalSD?.toFixed(2) || "0.00"}
+            ${currencyLabel} ${report?.totals?.totalSD?.toFixed(2) || "0.00"}
           </td>
         </tr>
 
       </tbody>
     </table>
   </div>
+<div class="signature-section text-sm" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;width:100%;margin-top:0;padding:72px 24px 0;page-break-inside:avoid;break-inside:avoid;">
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">General Manager</p>
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">Finance Manager</p>
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">Accounts Officer</p>
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">Prepared By</p>
+</div>
 </body>
 </html>
 `;

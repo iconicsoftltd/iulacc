@@ -35,12 +35,21 @@ const ProfitLossReportPrint = (
           @media print {
             body { -webkit-print-color-adjust: exact; }
             .signature-section {
-              position: absolute;
-              bottom: 20px;
-              left: 0;
-              right: 0;
-              padding: 0 24px;
+              position: static;
+              display: grid !important;
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+              gap: 24px;
+              width: 100%;
+              margin-top: 0;
+              padding: 72px 24px 0;
+        /* signature separator removed to keep report layout clean */
+              page-break-inside: avoid;
+              break-inside: avoid;
             }
+              .signature-section p {
+                text-align: center;
+                white-space: nowrap;
+              }
           }
         </style>
       </head>
@@ -65,7 +74,7 @@ const ProfitLossReportPrint = (
             <thead>
               <tr class="bg-fuchsia-700 text-white">
                 <th class="border border-fuchsia-700 p-2 text-left uppercase">Description</th>
-                <th class="border border-fuchsia-700 p-2 text-right uppercase">Amount (${currencyLabel})</th>
+                <th class="border border-fuchsia-700 p-2 text-right uppercase">Amount ${currencyLabel}</th>
               </tr>
             </thead>
             <tbody>
@@ -91,6 +100,12 @@ const ProfitLossReportPrint = (
           </table>
 
         </div>
+      <div class="signature-section text-sm">
+        <p>General Manager</p>
+        <p>Finance Manager</p>
+        <p>Accounts Officer</p>
+        <p>Prepared By</p>
+      </div>
       </body>
     </html>
   `;

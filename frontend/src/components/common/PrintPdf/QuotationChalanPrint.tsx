@@ -25,17 +25,30 @@ const QuotationChalanPrint = (selectedQuotationData: any[]) => {
           });
         };
       </script>
-      <style>
+      <style>          /* PDF_LAYOUT_NORMALIZATION */
+          table { width: 100% !important; table-layout: auto !important; border-collapse: collapse; }
+          th, td { box-sizing: border-box; }
+          td.text-right, th.text-right, .amount, .currency { white-space: nowrap !important; word-break: keep-all !important; overflow-wrap: normal !important; font-variant-numeric: tabular-nums; }
+          @media print { body { overflow: visible !important; } table { page-break-inside: auto; } tr { page-break-inside: avoid; } }
         @media print {
           body { -webkit-print-color-adjust: exact; color-adjust: exact; }
         }
         .signature-section {
-          position: absolute;
-          bottom: 20px;
-          left: 0;
-          right: 0;
-          padding: 0 24px;
+          position: static;
+          display: grid !important;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 24px;
+          width: 100%;
+          margin-top: 0;
+          padding: 72px 24px 0;
+        /* signature separator removed to keep report layout clean */
+          page-break-inside: avoid;
+          break-inside: avoid;
         }
+          .signature-section p {
+            text-align: center;
+            white-space: nowrap;
+          }
         .content-container {
           min-height: calc(100vh - 100px);
         }
@@ -119,13 +132,19 @@ const QuotationChalanPrint = (selectedQuotationData: any[]) => {
           .join("")}
       </div>
 
-       <div class="flex justify-between text-sm signature-section">
+<div class="signature-section text-sm">
         <p class="font-semibold underline">Customer Signature</p>
         <p class="font-semibold underline">Authorized Signature</p>
         <p class="font-semibold underline">Prepared By</p>
       </div>
 
-    </body>
+      <div class="signature-section text-sm">
+        <p>General Manager</p>
+        <p>Finance Manager</p>
+        <p>Accounts Officer</p>
+        <p>Prepared By</p>
+      </div>
+      </body>
   </html>
   `;
 

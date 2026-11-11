@@ -66,12 +66,12 @@ const TrialBalanceReportPrint = (
           <th colspan="2" class="border px-3 py-2 text-center">Closing</th>
         </tr>
         <tr>
-          <th class="border px-2 py-2 text-right">Debit (${currencyLabel})</th>
-          <th class="border px-2 py-2 text-right">Credit (${currencyLabel})</th>
-          <th class="border px-2 py-2 text-right">Debit (${currencyLabel})</th>
-          <th class="border px-2 py-2 text-right">Credit (${currencyLabel})</th>
-          <th class="border px-2 py-2 text-right">Debit (${currencyLabel})</th>
-          <th class="border px-2 py-2 text-right">Credit (${currencyLabel})</th>
+          <th class="border px-2 py-2 text-right">Debit ${currencyLabel}</th>
+          <th class="border px-2 py-2 text-right">Credit ${currencyLabel}</th>
+          <th class="border px-2 py-2 text-right">Debit ${currencyLabel}</th>
+          <th class="border px-2 py-2 text-right">Credit ${currencyLabel}</th>
+          <th class="border px-2 py-2 text-right">Debit ${currencyLabel}</th>
+          <th class="border px-2 py-2 text-right">Credit ${currencyLabel}</th>
         </tr>
       </thead>
 
@@ -147,7 +147,7 @@ const TrialBalanceReportPrint = (
 
                     <!-- ===== LEDGER SUBTOTAL ===== -->
                     <tr class="font-semibold">
-                      <td class="border px-6 py-2 text-right">Sub Total (${currencyLabel})</td>
+                      <td class="border px-6 py-2 text-right">Sub Total ${currencyLabel}</td>
                       <td class="border px-2 py-2 text-right">${ledger.subtotal.openingDebit.toLocaleString()}</td>
                       <td class="border px-2 py-2 text-right">${ledger.subtotal.openingCredit.toLocaleString()}</td>
                       <td class="border px-2 py-2 text-right">${ledger.subtotal.trxDebit.toLocaleString()}</td>
@@ -161,7 +161,7 @@ const TrialBalanceReportPrint = (
 
                   <!-- ===== GROUP TOTAL ===== -->
                   <tr class="bg-gray-100 font-bold">
-                    <td class="border px-4 py-2 text-right">Total Amount (${currencyLabel})</td>
+                    <td class="border px-4 py-2 text-right">Total Amount ${currencyLabel}</td>
                     <td class="border px-2 py-2 text-right">${groupTotal.openingDebit.toLocaleString()}</td>
                     <td class="border px-2 py-2 text-right">${groupTotal.openingCredit.toLocaleString()}</td>
                     <td class="border px-2 py-2 text-right">${groupTotal.trxDebit.toLocaleString()}</td>
@@ -186,7 +186,7 @@ const TrialBalanceReportPrint = (
           grandTotal
             ? `
           <tr class="bg-gray-300 font-bold">
-            <td class="border px-4 py-3 text-right">Grand Total (${currencyLabel})</td>
+            <td class="border px-4 py-3 text-right">Grand Total ${currencyLabel}</td>
             <td class="border px-2 py-3 text-right">${grandTotal.openingDebit.toLocaleString()}</td>
             <td class="border px-2 py-3 text-right">${grandTotal.openingCredit.toLocaleString()}</td>
             <td class="border px-2 py-3 text-right">${grandTotal.trxDebit.toLocaleString()}</td>
@@ -200,6 +200,12 @@ const TrialBalanceReportPrint = (
       </tbody>
     </table>
   </div>
+<div class="signature-section text-sm" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;width:100%;margin-top:0;padding:72px 24px 0;page-break-inside:avoid;break-inside:avoid;">
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">General Manager</p>
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">Finance Manager</p>
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">Accounts Officer</p>
+  <p style="text-align:center;white-space:nowrap;font-weight:600;text-decoration:underline;">Prepared By</p>
+</div>
 </body>
 </html>
 `;
