@@ -14,7 +14,7 @@ interface CurrencyState {
 }
 
 export const currencies: Currency[] = [
-  { code: "BDT", name: "৳", symbol: "৳", flag: "/flags/bd.png" },
+  { code: "BDT", name: "BDT", symbol: "BDT", flag: "/flags/bd.png" },
   { code: "USD", name: "$", symbol: "$", flag: "/flags/usa.png" },
   { code: "SAR", name: "ر.س", symbol: "ر.س", flag: "/flags/sa.svg" },
 ];

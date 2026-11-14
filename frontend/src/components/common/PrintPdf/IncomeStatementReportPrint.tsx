@@ -11,11 +11,11 @@ const IncomeStatementReportPrint = (
     const value = String(currency?.name || currency?.code || "").trim();
     const normalized = value.toUpperCase();
     return normalized === "BDT" || normalized === "TAKA" || value === "৳"
-      ? "&#2547;"
+      ? "BDT"
       : value;
   };
-  //const currencyLabel = formatPrintCurrency(currentCurrency);  const currencyLabel = currencyLabel?.toUpperCase() === "BDT" ? "৳" : currencyLabel || "৳";
-  const currencyLabel = formatPrintCurrency(currentCurrency) || "&#2547;";
+  //const currencyLabel = formatPrintCurrency(currentCurrency);  const currencyLabel = currencyLabel?.toUpperCase() === "BDT" ? "BDT" : currencyLabel || "BDT";
+  const currencyLabel = formatPrintCurrency(currentCurrency) || "BDT";
   const report = reportData?.data;
 
   const html = `

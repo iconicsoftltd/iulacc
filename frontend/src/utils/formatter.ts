@@ -48,7 +48,7 @@ export const formatAmount = (value: any, digits = 2): string => {
 
 /**
  * Format currency with symbol
- * Example: ৳ 1,000.00
+ * Example: BDT 1,000.00
  */
 export const formatCurrency = (
   value: any,
@@ -61,9 +61,9 @@ export const formatCurrency = (
 function getSavedCurrencySymbol(): string {
   try {
     const saved = JSON.parse(localStorage.getItem("currentCurrency") || "null");
-    return saved?.symbol || saved?.name || "৳";
+    return saved?.symbol || saved?.name || "BDT";
   } catch {
-    return "৳";
+    return "BDT";
   }
 }
 

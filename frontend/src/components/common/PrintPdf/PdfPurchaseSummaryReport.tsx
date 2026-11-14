@@ -11,7 +11,7 @@ const PdfPurchaseSummaryReport = (
 ) => {
   const logo = appConfiguration.logo;
   const report = reportData?.data;
-  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "BDT" : currentCurrency?.name || "BDT";
 
   const doc = new jsPDF("portrait", "mm", "a4");
   const pageWidth = doc.internal.pageSize.getWidth();

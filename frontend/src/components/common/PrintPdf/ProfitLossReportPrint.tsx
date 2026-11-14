@@ -9,7 +9,7 @@ const ProfitLossReportPrint = (
   reportType: string
 ) => {
   const logo = appConfiguration.logo;
-  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "BDT" : currentCurrency?.name || "BDT";
   const report = reportData?.data;
   const rows = report
     ? [

@@ -30,8 +30,8 @@ const CashInHandReport = () => {
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
 
   const currentCurrency = useSelector(selectCurrentCurrency);
-  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
-  const formatCashAmount = (value: any) => `${currencyLabel || "৳"} ${formatAmount(value)}`;
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "BDT" : currentCurrency?.name || "BDT";
+  const formatCashAmount = (value: any) => `${currencyLabel || "BDT"} ${formatAmount(value)}`;
   const { data: cashInHandData, isLoading, isFetching } = useGetCashInHandReportQuery(queryParams);
 
   // Search handler preserved exactly

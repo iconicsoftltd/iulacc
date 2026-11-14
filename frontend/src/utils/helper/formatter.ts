@@ -4,9 +4,9 @@ import { fallback } from "../common/fallback";
 const selectedCurrencySymbol = () => {
   try {
     const saved = JSON.parse(localStorage.getItem("currentCurrency") || "null");
-    return saved?.symbol || saved?.name || "৳";
+    return saved?.symbol || saved?.name || "BDT";
   } catch {
-    return "৳";
+    return "BDT";
   }
 };
 

@@ -24,7 +24,7 @@ const TrialBalanceReport = () => {
   const [queryParams, setQueryParams] = useState({ fromDate, toDate });
 
   const currentCurrency = useSelector(selectCurrentCurrency);
-  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "BDT" : currentCurrency?.name || "BDT";
 
   /* ===================== Search Handler ===================== */
   const handleSearch = ({ reportType, fromDate, toDate, month, year }) => {

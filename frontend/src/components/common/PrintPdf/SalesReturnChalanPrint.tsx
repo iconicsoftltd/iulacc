@@ -9,7 +9,7 @@ const SalesReturnChalanPrint = (
     const value = String(currency?.name || currency?.code || "").trim();
     const normalized = value.toUpperCase();
     return normalized === "BDT" || normalized === "TAKA" || value === "৳"
-      ? "&#2547;"
+      ? "BDT"
       : value;
   };
   const currencyLabel = formatPrintCurrency(currentCurrency);

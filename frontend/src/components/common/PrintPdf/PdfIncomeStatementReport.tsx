@@ -10,7 +10,7 @@ const PdfIncomeStatementReport = (
 ) => {
   const logo = appConfiguration.logo;
   const report = reportData?.data;
-  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "BDT" : currentCurrency?.name || "BDT";
 
   // Create new PDF document
   const doc = new jsPDF({

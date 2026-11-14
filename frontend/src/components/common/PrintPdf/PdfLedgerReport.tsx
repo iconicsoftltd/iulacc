@@ -11,7 +11,7 @@ const PdfLedgerReport = (
  // particularName: string = "All" // ✅ ADD
 ) => {
   const logo = appConfiguration.logo;
-  const currencyLabel = currentCurrency?.symbol || currentCurrency?.name || "৳";
+  const currencyLabel = currentCurrency?.symbol || currentCurrency?.name || "BDT";
   const formatAmount = (value: any) =>
     value === null || value === undefined || value === ""
       ? ""

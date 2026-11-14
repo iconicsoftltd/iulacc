@@ -33,7 +33,7 @@ const IncomeStatementReport = () => {
   const [selectedLedger, setSelectedLedger] = useState<SelectedLedger | null>(null);
 
   const currentCurrency = useSelector(selectCurrentCurrency);
-  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "৳" : currentCurrency?.name || "৳";
+  const currencyLabel = currentCurrency?.name?.toUpperCase() === "BDT" ? "BDT" : currentCurrency?.name || "BDT";
 
   const handleSearch = ({ reportType, fromDate, toDate, month, year }: any) => {
     let _fromDate = "";
