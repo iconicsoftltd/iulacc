@@ -66,8 +66,7 @@ const ArchivedVoucherLedgerReport = () => {
       skip:
         !shouldFetch ||
         !queryParams.fromDate ||
-        !queryParams.toDate ||
-        !particular?.id,
+        !queryParams.toDate,
     }
   );
 

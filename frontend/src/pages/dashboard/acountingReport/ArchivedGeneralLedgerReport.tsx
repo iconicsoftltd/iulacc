@@ -66,8 +66,7 @@ const ArchivedGeneralLedgerReport = () => {
       skip:
         !shouldFetch ||
         !queryParams.fromDate ||
-        !queryParams.toDate ||
-        !particular?.id,
+        !queryParams.toDate,
     }
   );
 
